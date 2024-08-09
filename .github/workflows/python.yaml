@@ -1,0 +1,360 @@
+---
+name: 'Python'
+
+
+on:
+  workflow_call:
+    secrets:
+      WORKFLOW_TOKEN:
+        description: "token to clone with"
+        required: true
+
+
+jobs:
+
+
+  lint:
+    name: Lint
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Create lint job
+        shell: bash
+        run: |
+          echo "Job does not exists as it needs to be created."
+
+
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    outputs:
+      unit-test-coverage: ${{ steps.run-unit-test.outputs.coverage }}
+    steps:
+
+
+      - uses: actions/checkout@v4
+
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_test.txt
+
+
+      - name: Run Tests
+        id: run-unit-test
+        shell: bash
+        run: |
+          cd app;
+          pytest --cov --cov-report term --cov-report xml:../coverage.xml --cov-report html:../coverage/ --junit-xml=../unit.JUnit.xml **/tests/unit;
+          echo "coverage=$(coverage report | awk '$1 == "TOTAL" {print $NF+0}')" > $GITHUB_OUTPUT
+
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: unit-test-results-${{ matrix.python-version }}
+          path: unit.JUnit.xml
+
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: coverage.xml
+
+
+      - name: Upload Coverage
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: coverage/*
+
+
+  # should only run on dev/master and tag
+  report:
+    name: Create Test Reports
+    needs:
+      - unit-test
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+    steps:
+
+      
+      - name: Test Report
+        if: success() || failure()
+        uses: dorny/test-reporter@v1
+        id: test-report
+        with:
+          artifact: unit-test-results-${{ matrix.python-version }}
+          name: Unit Test Report [Python ${{ matrix.python-version }}]
+          path: '*.xml'
+          reporter: java-junit
+
+
+      - name: Create Shields.io Endpoint.json
+        if: success() || failure()
+        shell: bash
+        run: |
+          echo '
+          {
+            "schemaVersion": 1,
+            "label": "Unit Test",
+            "message": "${{ steps.test-report.outputs.passed }} passed | ${{ steps.test-report.outputs.skipped }} skipped",
+            "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 162.53 196.9\"><defs><linearGradient id=\"a\" x1=\"319.46\" y1=\"219.79\" x2=\"478.86\" y2=\"82.65\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#5a9fd4\"/><stop offset=\"1\" stop-color=\"#306998\"/></linearGradient><linearGradient id=\"b\" x1=\"540.48\" y1=\"-0.35\" x2=\"483.56\" y2=\"80.18\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#ffd43b\"/><stop offset=\"1\" stop-color=\"#ffe873\"/></linearGradient><radialGradient id=\"c\" cx=\"-809.2\" cy=\"196.83\" r=\"42.46\" gradientTransform=\"matrix(0, -0.24, -1.05, 0, 463.94, 150.1)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#b8b8b8\" stop-opacity=\"0.5\"/><stop offset=\"1\" stop-color=\"#7f7f7f\" stop-opacity=\"0\"/></radialGradient></defs><title>python-logo</title><path d=\"M255,157.55a111.94,111.94,0,0,0-18.73,1.6c-16.59,2.93-19.6,9.07-19.6,20.38v14.94h39.2v5H202c-11.39,0-21.37,6.85-24.49,19.88-3.6,14.93-3.76,24.25,0,39.84,2.79,11.61,9.44,19.88,20.84,19.88h13.48V261.13c0-12.94,11.2-24.35,24.49-24.35h39.16a19.75,19.75,0,0,0,19.6-19.92V179.53c0-10.62-9-18.61-19.6-20.38A122.28,122.28,0,0,0,255,157.55Zm-21.2,12a7.47,7.47,0,1,1-7.36,7.49A7.44,7.44,0,0,1,233.83,169.57Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#a)\"/><path d=\"M299.95,199.45v17.41c0,13.5-11.44,24.86-24.49,24.86H236.3c-10.73,0-19.6,9.18-19.6,19.92V299c0,10.62,9.24,16.87,19.6,19.92,12.41,3.65,24.31,4.31,39.16,0,9.87-2.86,19.6-8.61,19.6-19.92V284H255.9v-5h58.76c11.39,0,15.64-7.95,19.6-19.88,4.09-12.28,3.92-24.09,0-39.84-2.82-11.34-8.19-19.88-19.6-19.88Zm-22,94.54a7.47,7.47,0,1,1-7.36,7.45A7.4,7.4,0,0,1,277.92,294Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#b)\"/><path d=\"M308.88,344.26c0,5.63-23.52,10.19-52.54,10.19s-52.54-4.56-52.54-10.19,23.52-10.19,52.54-10.19S308.88,338.64,308.88,344.26Z\" transform=\"translate(-174.73 -157.55)\" style=\"opacity:0.44382017850875854;isolation:isolate;fill:url(#c)\"/></svg>",
+            "color": "#4584b6",
+            "style": "plastic"
+          }' > endpoint_${{ matrix.python-version }}.json
+
+
+      - name: Upload Badge Endpoint json
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: unit-test-shield-endpoint-${{ matrix.python-version }}
+          path: endpoint_${{ matrix.python-version }}.json
+
+
+
+  coverage-report:
+    name: Create Coverage report
+    needs:
+      - unit-test
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.12']
+    steps:
+    
+      - name: Run Tests
+        shell: bash
+        run: |
+          ls -l;
+
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          github-token: ${{ github.token }}
+
+      - name: ls
+        shell: bash
+        if: success() || failure()
+        run: |
+          ls -l;
+
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: true
+          fail_below_min: true
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: false
+          indicators: true
+          output: both
+          thresholds: '60 85'
+
+
+      - name: ls
+        shell: bash
+        if: success() || failure()
+        run: |
+          ls -l;
+
+
+      - name: create status check/comment for code coverage results
+        id: jest_coverage_check
+        uses: im-open/process-code-coverage-summary@v2.3.0
+        with:
+          github-token: ${{ github.token }}
+          summary-file: code-coverage-results.md
+          create-pr-comment: true
+          update-comment-if-one-exists: true
+          update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
+
+      - name: Upload Coverage Summary
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: code-coverage-results-${{ matrix.python-version }}
+          path: code-coverage-results.md
+
+
+
+  badge-endpoint:
+    name: Publish Badge endpoint files
+    if: ${{ github.ref_name == 'master' || github.ref_name == 'development' }}
+    needs:
+      - unit-test
+      - report
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.12']
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout Endpoint Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'nofusscomputing/.github'
+          ref: 'master'
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          path: 'endpoint_publish'
+          fetch-depth: '1'
+          show-progress: true
+          submodules: false
+
+
+      - name: Create Publish Directories
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          cd endpoint_publish;
+          echo "[Debug] PWD[${PWD}]";
+          mkdir -p repositories/${{ github.repository }}/${{ github.ref_name }};
+          ls -la;
+
+
+      - name: Create Publish Directories
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          # cd repositories/${{ github.repository }}/${{ github.ref_name }};
+          echo "[Debug] PWD[${PWD}]";
+
+
+      - name: Download Badge Endpoint json
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-shield-endpoint-${{ matrix.python-version }}
+
+
+      - name: Add endpoint file
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+
+          echo "[Debug] **************************** - cd endpoint_publish";
+
+          cd endpoint_publish;
+
+          echo "[Debug] **************************** - ls -la";
+
+          ls -la
+
+          echo "[Debug] ****************************";
+
+          echo "[Debug] PWD[${PWD}]";
+
+          echo "[Debug] **************************** - ls -la ../";
+
+          ls -la ../
+
+          echo "[Debug] **************************** - cp ../endpoint_${{ matrix.python-version }}.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_unit_test.json";
+
+          cp ../endpoint_${{ matrix.python-version }}.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_unit_test.json;
+
+          echo "[Debug] **************************** - ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/";
+
+          ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/;
+
+
+
+      - name: Create Shields.io Endpoint.json for coverage
+        if: success() || failure()
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+
+          echo "[Debug] PWD[${PWD}]";
+
+          echo "[Debug] **************************** - create file";
+
+          echo '
+          {
+            "schemaVersion": 1,
+            "label": "Unit Test Coverage",
+            "message": "${{ needs.unit-test.outputs.unit-test-coverage }}%",
+            "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 162.53 196.9\"><defs><linearGradient id=\"a\" x1=\"319.46\" y1=\"219.79\" x2=\"478.86\" y2=\"82.65\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#5a9fd4\"/><stop offset=\"1\" stop-color=\"#306998\"/></linearGradient><linearGradient id=\"b\" x1=\"540.48\" y1=\"-0.35\" x2=\"483.56\" y2=\"80.18\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#ffd43b\"/><stop offset=\"1\" stop-color=\"#ffe873\"/></linearGradient><radialGradient id=\"c\" cx=\"-809.2\" cy=\"196.83\" r=\"42.46\" gradientTransform=\"matrix(0, -0.24, -1.05, 0, 463.94, 150.1)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#b8b8b8\" stop-opacity=\"0.5\"/><stop offset=\"1\" stop-color=\"#7f7f7f\" stop-opacity=\"0\"/></radialGradient></defs><title>python-logo</title><path d=\"M255,157.55a111.94,111.94,0,0,0-18.73,1.6c-16.59,2.93-19.6,9.07-19.6,20.38v14.94h39.2v5H202c-11.39,0-21.37,6.85-24.49,19.88-3.6,14.93-3.76,24.25,0,39.84,2.79,11.61,9.44,19.88,20.84,19.88h13.48V261.13c0-12.94,11.2-24.35,24.49-24.35h39.16a19.75,19.75,0,0,0,19.6-19.92V179.53c0-10.62-9-18.61-19.6-20.38A122.28,122.28,0,0,0,255,157.55Zm-21.2,12a7.47,7.47,0,1,1-7.36,7.49A7.44,7.44,0,0,1,233.83,169.57Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#a)\"/><path d=\"M299.95,199.45v17.41c0,13.5-11.44,24.86-24.49,24.86H236.3c-10.73,0-19.6,9.18-19.6,19.92V299c0,10.62,9.24,16.87,19.6,19.92,12.41,3.65,24.31,4.31,39.16,0,9.87-2.86,19.6-8.61,19.6-19.92V284H255.9v-5h58.76c11.39,0,15.64-7.95,19.6-19.88,4.09-12.28,3.92-24.09,0-39.84-2.82-11.34-8.19-19.88-19.6-19.88Zm-22,94.54a7.47,7.47,0,1,1-7.36,7.45A7.4,7.4,0,0,1,277.92,294Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#b)\"/><path d=\"M308.88,344.26c0,5.63-23.52,10.19-52.54,10.19s-52.54-4.56-52.54-10.19,23.52-10.19,52.54-10.19S308.88,338.64,308.88,344.26Z\" transform=\"translate(-174.73 -157.55)\" style=\"opacity:0.44382017850875854;isolation:isolate;fill:url(#c)\"/></svg>",
+            "color": "#4584b6",
+            "style": "plastic"
+          }' > repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_coverage.json;
+
+          echo "[Debug] **************************** cat repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_coverage.json";
+
+          cat repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_coverage.json;
+
+
+
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "helpdesk@nofusscomputing.com";
+          git config --global user.name "nfc-bot";
+
+
+      - name: Git add
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git status;
+          echo "[Debug] ****************************";
+          git add .
+
+      - name: Git commit
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git commit -m "chore: add badge endpount file ${{ github.repository }}/${{ github.ref_name }}"
+
+
+      - name: git push
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git push
