@@ -352,7 +352,7 @@ jobs:
 
 
       - name: Git commit
-        if: ${{ steps.git-add.outputs.changed }}
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
         shell: bash
         run: |
           echo "[Debug] PWD[${PWD}]";
@@ -367,7 +367,7 @@ jobs:
 
 
       - name: git push
-        if: ${{ steps.git-add.outputs.changed }}
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
         shell: bash
         run: |
           echo "[Debug] PWD[${PWD}]";
