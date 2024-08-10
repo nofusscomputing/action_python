@@ -318,6 +318,7 @@ jobs:
 
 
       - name: Git add
+        id: git-add
         shell: bash
         run: |
           echo "[Debug] PWD[${PWD}]";
@@ -330,9 +331,28 @@ jobs:
           echo "[Debug] ****************************";
           git status;
           echo "[Debug] ****************************";
+
+          if [ "$(git status -s)" ];
+
+            echo "changed=true" > $GITHUB_OUTPUT;
+
+            echo "[Info] Changes need to be committed";
+
+          else
+
+            echo "changed=false" > $GITHUB_OUTPUT;
+
+            echo "[Info] NO changes to be committed";
+
+          fi
+
+          echo "[Debug] ****************************";
+
           git add .
 
+
       - name: Git commit
+        if: ${{ steps.git-add.outputs.changed }}
         shell: bash
         run: |
           echo "[Debug] PWD[${PWD}]";
@@ -347,6 +367,7 @@ jobs:
 
 
       - name: git push
+        if: ${{ steps.git-add.outputs.changed }}
         shell: bash
         run: |
           echo "[Debug] PWD[${PWD}]";
