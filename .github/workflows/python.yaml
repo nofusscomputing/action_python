@@ -332,7 +332,7 @@ jobs:
           git status;
           echo "[Debug] ****************************";
 
-          if [ "$(git status -s)" ];
+          if [ "$(git status -s)" ]; then
 
             echo "changed=true" > $GITHUB_OUTPUT;
 
