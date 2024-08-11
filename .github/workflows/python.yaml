@@ -379,3 +379,227 @@ jobs:
           echo "[Debug] PWD[${PWD}]";
           echo "[Debug] ****************************";
           git push
+
+
+  vulnerability-scan:
+    name: PIP file Scan (requirements.txt)
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - uses: actions/checkout@v4
+
+
+      - name: Run Trivy vulnerability scanner against requirements.txt
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: false
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          scan-ref: requirements.txt
+          exit-code: 0
+
+
+      - name: Upload requirements.txt scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+
+      - name: Run Trivy vulnerability scanner against requirements.txt (json Report)
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: false
+          format: 'json'
+          output: 'scan-results.json'
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          scan-ref: requirements.txt
+          exit-code: 0
+
+
+      - name: Upload scan results (json Report)
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-scan-results-json
+          path: scan-results.json
+
+
+
+  vulnerability-report:
+    name: Create Reports
+    needs:
+      - vulnerability-scan
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - name: Fetch scan results (json Report)
+        uses: actions/download-artifact@v4
+        with:
+          name: python-scan-results-json
+
+
+      - name: Create Vulnerabilities (Critical/High)
+        run: |
+          echo "[Debug] jq -r '.Results'=$(jq -r '.Results' scan-results.json)";
+
+          if [ "$(jq -r '.Results' scan-results.json)" ]; then
+
+            not_empty="$(jq -r '.Results[] | .Vulnerabilities[]' scan-results.json)";
+
+          else
+
+            not_empty="";
+
+          fi
+
+          echo "[Debug] not_empty=${not_empty}";
+
+          jq -r '
+          [
+          "# Python Scan Results (requirements.txt)",
+          "",
+          "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
+          "**File:** _" + ( .ArtifactName // "" ) + "_",
+          ""
+          ] | join("\n")
+          ' scan-results.json > vulnerability-report.md
+
+          if [ "$not_empty" ]; then
+            jq -r '
+            def hr(severity):
+            if severity == "HIGH" or severity == "CRITICAL" then true else false end;
+            def to_md:
+            "| " + (.VulnerabilityID // "") + " | " + (.PkgName // "") + " | " + (.InstalledVersion // "") + " | " + (.Severity // "") + " | " + (.Title // "") + " |";
+            [
+            "## High and Critical Vulnerabilities",
+            "",
+            "| Vulnerability ID | Package | Version | Severity | Description |",
+            "| --------- | ----- | ----- | ----- | -------|",
+            (.Results[] | .Vulnerabilities[] | select(hr(.Severity)) | to_md),
+            ""
+            ] | join("\n")
+            ' scan-results.json >> vulnerability-report.md
+
+          else
+
+            echo "**Nothing Found**" >> vulnerability-report.md
+
+          fi;
+
+
+
+      - name: Create Full Vulnerabilities
+        run: |
+          echo "[Debug] jq -r '.Results'=$(jq -r '.Results' scan-results.json)";
+
+          if [ "$(jq -r '.Results' scan-results.json)" ]; then
+
+            not_empty="$(jq -r '.Results[] | .Vulnerabilities[]' scan-results.json)";
+
+          else
+
+            not_empty="";
+
+          fi
+
+          echo "[Debug] not_empty=${not_empty}";
+
+
+          jq -r '
+          [
+          "# Full Scan Results",
+          "",
+          "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
+          "**File:** _" + ( .ArtifactName // "" ) + "_",
+          ""
+          ] | join("\n")
+          ' scan-results.json > full-vulnerability-report.md
+
+          if [ "$not_empty" ]; then
+            jq -r '
+            def hr(severity):
+            if severity == "HIGH" or severity == "CRITICAL" then true else true end;
+            def to_md:
+            "| " + (.VulnerabilityID // "") + " | " + (.PkgName // "") + " | " + (.InstalledVersion // "") + " | " + (.Severity // "") + " | " + (.Title // "") + " |";
+            [
+            "## Vulnerabilities",
+            "",
+            "| Vulnerability ID | Package | Version | Severity | Description |",
+            "| --------- | ----- | ----- | ----- | -------|",
+            (.Results[] | .Vulnerabilities[] | select(.Severity) | to_md),
+            ""
+            ] | join("\n")
+            ' scan-results.json >> full-vulnerability-report.md
+
+          else
+
+            echo "**Nothing Found**" >> full-vulnerability-report.md
+
+          fi;
+
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-vulnerability-report
+          path: vulnerability-report.md
+
+
+      - name: Upload scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-vulnerability-report-full
+          path: full-vulnerability-report.md
+
+
+      - uses: dtinth/markdown-report-action@v1
+        with:
+          name: Python Vulnerability Report
+          title: Python Vulnerability Report
+          body-file: full-vulnerability-report.md
+
+
+
+  pull-request-report-comment:
+    if: ${{ github.ref_type != 'tag' }}
+    needs:
+      - vulnerability-scan
+      - vulnerability-report
+    runs-on: ubuntu-latest
+    name: Comment on Pull Request (Python Scan)
+    steps:
+
+
+      - name: Find Current Pull Request
+        uses: jwalton/gh-find-current-pr@v1
+        id: finder
+
+
+      - name: Fetch Vulnerability Report
+        if: ${{ steps.finder.outputs.pr != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: python-vulnerability-report
+
+
+      - name: Capture scan results
+        if: ${{ steps.finder.outputs.pr != '' }}
+        run: |
+          content=$(cat vulnerability-report.md | head -c 65000)
+          echo "report<<EOF" >> $GITHUB_ENV
+          echo "$content" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+
+      - name: Comment scan results on PR
+        if: ${{ steps.finder.outputs.pr != '' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ steps.finder.outputs.pr }}
+          header: Python requirements.txt Scan Results
+          message: |
+            ${{ env.report }}
