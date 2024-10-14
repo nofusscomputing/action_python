@@ -579,8 +579,8 @@ jobs:
       - name: Find Current Pull Request
         uses: jwalton/gh-find-current-pr@89ee5799558265a1e0e31fab792ebb4ee91c016b    #v1.3.3
         id: finder
-        with:
-          sha: ${{ github.event.pull_request.head.sha }}
+        # with:
+        #   sha: ${{ github.event.pull_request.head.sha }}
 
 
       - name: Fetch Vulnerability Report
