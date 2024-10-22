@@ -393,7 +393,7 @@ jobs:
 
 
       - name: Run Trivy vulnerability scanner against requirements.txt
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
           ignore-unfixed: false
@@ -411,7 +411,7 @@ jobs:
 
 
       - name: Run Trivy vulnerability scanner against requirements.txt (json Report)
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           scan-type: 'fs'
           ignore-unfixed: false
