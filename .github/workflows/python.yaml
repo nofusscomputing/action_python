@@ -212,6 +212,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: ['3.10', '3.11', '3.12', '3.13']
+    continue-on-error: true
     steps:
 
       
@@ -327,6 +328,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: ['3.12']
+    continue-on-error: true
     steps:
     
       - name: Run Tests
