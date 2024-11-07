@@ -204,7 +204,7 @@ jobs:
 
   # should only run on dev/master and tag
   functional-report:
-    name: Create Test Reports
+    name: Create Test Reports (Functional)
     needs:
       - functional-test
     runs-on: ubuntu-latest
@@ -567,7 +567,7 @@ jobs:
 
 
   badge-endpoint-functional:
-    name: Publish Badge endpoint files
+    name: Publish Badge endpoint files (Functional)
     if: ${{ github.ref_name == 'master' || github.ref_name == 'development' }}
     needs:
       - functional-test
