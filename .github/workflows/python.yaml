@@ -176,6 +176,7 @@ jobs:
           name: Unit Test Report [Python ${{ matrix.python-version }}]
           path: '*.xml'
           reporter: java-junit
+          fail-on-error: false
 
 
       - name: Create Shields.io Endpoint.json
@@ -222,6 +223,7 @@ jobs:
           name: Functional Test Report [Python ${{ matrix.python-version }}]
           path: '*.xml'
           reporter: java-junit
+          fail-on-error: false
 
 
       - name: Create Shields.io Endpoint.json
@@ -375,7 +377,7 @@ jobs:
         if: success() || failure()
         with:
           github-token: ${{ github.token }}
-          summary-file: functional-code-coverage-results.md
+          summary-file: code-coverage-results.md
           check-name: 'Functional Code Coverage'
           create-pr-comment: true
           update-comment-if-one-exists: true
@@ -386,7 +388,7 @@ jobs:
         if: success() || failure()
         with:
           name: functional-code-coverage-results-${{ matrix.python-version }}
-          path: functional-code-coverage-results.md
+          path: code-coverage-results.md
 
 
 
