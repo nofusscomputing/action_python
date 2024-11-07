@@ -379,6 +379,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           summary-file: code-coverage-results.md
+          check-name: 'Functional Code Coverage'
           create-pr-comment: true
           update-comment-if-one-exists: true
           update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
