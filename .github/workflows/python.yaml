@@ -375,7 +375,7 @@ jobs:
         if: success() || failure()
         with:
           github-token: ${{ github.token }}
-          summary-file: code-coverage-results.md
+          summary-file: functional-code-coverage-results.md
           check-name: 'Functional Code Coverage'
           create-pr-comment: true
           update-comment-if-one-exists: true
@@ -385,8 +385,8 @@ jobs:
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
-          name: code-coverage-results-${{ matrix.python-version }}
-          path: code-coverage-results.md
+          name: functional-code-coverage-results-${{ matrix.python-version }}
+          path: functional-code-coverage-results.md
 
 
 
