@@ -176,7 +176,7 @@ jobs:
           name: Unit Test Report [Python ${{ matrix.python-version }}]
           path: '*.xml'
           reporter: java-junit
-          fail-on-error: false
+          # fail-on-error: false
 
 
       - name: Create Shields.io Endpoint.json
@@ -223,7 +223,7 @@ jobs:
           name: Functional Test Report [Python ${{ matrix.python-version }}]
           path: '*.xml'
           reporter: java-junit
-          fail-on-error: false
+          # fail-on-error: false
 
 
       - name: Create Shields.io Endpoint.json
