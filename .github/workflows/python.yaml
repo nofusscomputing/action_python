@@ -169,7 +169,6 @@ jobs:
 
       
       - name: Test Report
-        if: success() || failure()
         uses: dorny/test-reporter@v1
         id: test-report
         with:
@@ -216,7 +215,6 @@ jobs:
 
       
       - name: Test Report
-        if: success() || failure()
         uses: dorny/test-reporter@v1
         id: test-report
         with:
