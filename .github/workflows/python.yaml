@@ -321,7 +321,7 @@ jobs:
   coverage-report-functional:
     name: Create Coverage report (Functional)
     needs:
-      - unit-test
+      - functional-test
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
