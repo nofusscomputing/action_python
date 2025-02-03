@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           cd app;
-          pytest -s --cov --cov-report term --cov-report xml:../coverage.xml --cov-report html:../coverage/ --junit-xml=../unit.JUnit.xml **/tests/unit;
+          pytest -s -v --full-trace --showlocals --cov --cov-report term --cov-report xml:../coverage.xml --cov-report html:../coverage/ --junit-xml=../unit.JUnit.xml **/tests/unit;
           echo "coverage=$(coverage report | awk '$1 == "TOTAL" {print $NF+0}')" > $GITHUB_OUTPUT
 
 
@@ -127,7 +127,7 @@ jobs:
         shell: bash
         run: |
           cd app;
-          pytest -s --cov --cov-report term --cov-report xml:../functional-coverage.xml --cov-report html:../coverage/functional/ --junit-xml=../functional.JUnit.xml **/tests/functional;
+          pytest -s -v --full-trace --showlocals --cov --cov-report term --cov-report xml:../functional-coverage.xml --cov-report html:../coverage/functional/ --junit-xml=../functional.JUnit.xml **/tests/functional;
           echo "coverage=$(coverage report | awk '$1 == "TOTAL" {print $NF+0}')" > $GITHUB_OUTPUT
 
 
