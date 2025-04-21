@@ -64,10 +64,9 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          cd app;
-          pytest -s -v --full-trace --showlocals --cov --cov-branch --cov-report term --cov-report xml:../coverage.xml --cov-report html:../coverage/ --cov-report json:../coverage_unit.json --junit-xml=../unit.JUnit.xml **/tests/unit;
-          echo coverage=$(echo "$(jq -r '.totals.percent_covered' ../coverage_unit.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
-          echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' ../coverage_unit.json) $(jq -r '.totals.num_branches' ../coverage_unit.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
+          pytest -s -v --full-trace --showlocals --cov --cov-branch --cov-report term --cov-report xml:coverage.xml --cov-report html:coverage/ --cov-report json:coverage_unit.json --junit-xml=unit.JUnit.xml app/**/tests/unit;
+          echo coverage=$(echo "$(jq -r '.totals.percent_covered' coverage_unit.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
+          echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_unit.json) $(jq -r '.totals.num_branches' coverage_unit.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
 
       - name: Upload Test Report
@@ -137,10 +136,9 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          cd app;
-          pytest -s -v --full-trace --showlocals --cov --cov-branch --cov-report term --cov-report xml:../functional-coverage.xml --cov-report html:../coverage/functional/ --cov-report json:../coverage_functional.json --junit-xml=../functional.JUnit.xml **/tests/functional;
-          echo coverage=$(echo "$(jq -r '.totals.percent_covered' ../coverage_functional.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
-          echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' ../coverage_functional.json) $(jq -r '.totals.num_branches' ../coverage_functional.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
+          pytest -s -v --full-trace --showlocals --cov --cov-branch --cov-report term --cov-report xml:functional-coverage.xml --cov-report html:coverage/functional/ --cov-report json:coverage_functional.json --junit-xml=functional.JUnit.xml app/**/tests/functional;
+          echo coverage=$(echo "$(jq -r '.totals.percent_covered' coverage_functional.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
+          echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_functional.json) $(jq -r '.totals.num_branches' coverage_functional.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
 
       - name: Upload Test Report
