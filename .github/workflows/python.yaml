@@ -100,6 +100,14 @@ jobs:
           name: coverage-${{ matrix.python-version }}
           path: coverage/*
 
+      - name: Upload Unit Coverage (rc)
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: coverage-rc-unit-${{ matrix.python-version }}
+          path: .coverage
+          include-hidden-files: true
+
 
   functional-test:
     name: Functional Test
@@ -171,6 +179,14 @@ jobs:
         with:
           name: functional-coverage-${{ matrix.python-version }}
           path: coverage/functional/*
+
+      - name: Upload Functional Coverage (rc)
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: coverage-rc-functional-${{ matrix.python-version }}
+          path: .coverage
+          include-hidden-files: true
 
 
   # should only run on dev/master and tag
