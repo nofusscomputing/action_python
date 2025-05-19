@@ -4,6 +4,17 @@ name: 'Python'
 
 on:
   workflow_call:
+    inputs:
+      LINT:
+        default: true
+        description: Should pylint run
+        required: false
+        type: boolean
+      LINT_ERROR_ON_WARNING:
+        default: false
+        description: Should pylint return error on Warning
+        required: false
+        type: boolean
     secrets:
       WORKFLOW_TOKEN:
         description: "token to clone with"
@@ -16,22 +27,162 @@ env:
 
 jobs:
 
+  init:
+    name: Meta
+    runs-on: ubuntu-latest
+    outputs:
+      changed-files: ${{ steps.changed-files.outputs.project_all_changed_files }}
+      doc-changed-files: ${{ steps.changed-files.outputs.docs_changed_files }}
+      py-changed-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+      py-any-changed: ${{ steps.changed-files.outputs.any_changed}}
+      tesy-changed-files: ${{ steps.changed-files.outputs.test_changed_files }}
+    steps:
+
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+
+
+      - name: Get base branch name
+        id: base-branch-name
+        shell: bash
+        run: |
+          export CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD);
+
+          if [ "${CURRENT_BRANCH}" == "development" ]; then
+
+            BASE_BRANCH=master
+
+          elif [ "${CURRENT_BRANCH}" == "feature-next-release" ]; then
+
+            BASE_BRANCH=development
+
+          else
+
+            BASE_BRANCH=feature-next-release
+
+          fi;
+
+          echo "Base branch is ${BASE_BRANCH}";
+
+          echo BASE_BRANCH=${BASE_BRANCH} > $GITHUB_OUTPUT
+
+
+      - uses: nrwl/nx-set-shas@dbe0650947e5f2c81f59190a38512cf49126fe6b    #v4.3.0
+        id: setSHAs
+        with:
+          main-branch-name: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
+
+
+      - name: Get all files that have changed
+        id: changed-files
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
+        with:
+          files: |
+            **.py
+            !app/*/tests/
+            !app/*/migrations/
+          base_sha: ${{ steps.setSHAs.outputs.base }}
+
+
+      - name: List all changed files
+        # if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+        run: |
+          echo "changed: ${ALL_CHANGED_FILES}":
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
+
+
 
   lint:
     name: Lint
-    if: ${{ false }}
+    needs:
+      - init
     runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
     steps:
 
-      - name: Create lint job
+
+      - uses: actions/checkout@v4
+
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+
+      - name: Install Dependencies ${{ matrix.python-version }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_test.txt
+
+
+      - name: Lint ${{ matrix.python-version }}
+        id: lint
+        if: inputs.LINT && needs.init.outputs.py-any-changed
+        shell: bash
+        env:
+          PY_CHANGED_FILES: ${{ needs.init.outputs.py-changed-files }}
+        run: |
+          pylint --py-version ${{ matrix.python-version }} \
+            --msg-template "::{category} file={path},line={line},endLine={end_line},title={msg_id}::{msg} see https://pylint.pycqa.org/en/latest/user_guide/messages/{category}/{symbol}.html" \
+            ${PY_CHANGED_FILES} || EXITCODE=$?
+
+          if [ "${EXITCODE}" ]; then
+
+            echo "exit_code=${EXITCODE}" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "exit_code=0" >> $GITHUB_OUTPUT
+
+          fi
+
+
+      - name: Fail on Error
+        if: steps.lint.outputs.exit_code == 1
         shell: bash
         run: |
-          echo "Job does not exists as it needs to be created."
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
+      - name: Fail on Fatal
+        if: steps.lint.outputs.exit_code == 2
+        shell: bash
+        run: |
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
+      - name: Fail on Warning
+        if: inputs.LINT_ERROR_ON_WARNING && steps.lint.outputs.exit_code == 4
+        shell: bash
+        run: |
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
+      - name: Fail on Usage Error
+        if: steps.lint.outputs.exit_code == 32
+        shell: bash
+        run: |
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
 
 
   unit-test:
     name: Unit Test
     runs-on: ubuntu-latest
+    needs:
+      - lint
     strategy:
       max-parallel: 4
       matrix:
@@ -112,6 +263,8 @@ jobs:
   functional-test:
     name: Functional Test
     runs-on: ubuntu-latest
+    needs:
+      - lint
     strategy:
       max-parallel: 4
       matrix:
