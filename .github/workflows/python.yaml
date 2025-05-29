@@ -133,7 +133,7 @@ jobs:
         env:
           PY_CHANGED_FILES: ${{ needs.init.outputs.py-changed-files }}
         run: |
-          pylint --py-version ${{ matrix.python-version }} --msg-template "::{category} file={path},line={line},endLine={end_line},title={msg_id}::{msg} see https://pylint.pycqa.org/en/latest/user_guide/messages/{category}/{symbol}.html" ${PY_CHANGED_FILES} || EXITCODE=$?
+          pylint --py-version ${{ matrix.python-version }} --output-format=github ${PY_CHANGED_FILES} || EXITCODE=$?
 
           echo "Exit code was $EXITCODE";
 
