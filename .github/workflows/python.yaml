@@ -29,7 +29,7 @@ jobs:
 
   init:
     name: Meta
-    if: github.ref_name != 'refs/heads/development' && github.ref_name != 'refs/heads/master'
+    if: ${{ github.ref_name != 'master' && github.ref_name != 'development' }}
     runs-on: ubuntu-latest
     outputs:
       changed-files: ${{ steps.changed-files.outputs.project_all_changed_files }}
@@ -101,7 +101,7 @@ jobs:
 
   lint:
     name: Lint
-    if: github.ref_name != 'refs/heads/development' && github.ref_name != 'refs/heads/master'
+    if: ${{ github.ref_name != 'master' && github.ref_name != 'development' }}
     needs:
       - init
     runs-on: ubuntu-latest
