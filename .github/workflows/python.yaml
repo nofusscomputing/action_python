@@ -29,6 +29,7 @@ jobs:
 
   init:
     name: Meta
+    if: github.ref_name != 'development' || github.ref_name != 'master'
     runs-on: ubuntu-latest
     outputs:
       changed-files: ${{ steps.changed-files.outputs.project_all_changed_files }}
@@ -100,6 +101,7 @@ jobs:
 
   lint:
     name: Lint
+    if: github.ref_name != 'development' || github.ref_name != 'master'
     needs:
       - init
     runs-on: ubuntu-latest
@@ -434,6 +436,33 @@ jobs:
           name: coverage-combined-unit-function-html-${{ matrix.python-version }}
           path: artifacts/*
           include-hidden-files: true
+
+
+
+
+
+    ################################################################################################################################
+    #
+    # Future Plan:
+    #
+    # with command: `git diff --name-only $(git rev-parse feature-next-release) HEAD`
+    # to get a list of files to create a coverage html report with just the changed files.
+    #
+    ################################################################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
