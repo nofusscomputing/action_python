@@ -93,7 +93,8 @@ jobs:
             !app/*/migrations/
           # base_sha: ${{ steps.setSHAs.outputs.base }}
           # base_sha: ${{ steps.get-sha.outputs.sha }}
-          base_sha: ${{ env.NX_BASE }}
+          # base_sha: ${{ env.NX_BASE }}
+          base_sha: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
 
 
       - name: List all changed files
