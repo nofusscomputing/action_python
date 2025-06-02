@@ -75,11 +75,11 @@ jobs:
           main-branch-name: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
 
 
-      - uses: matheusraz/ref-sha@v1
-        id: get-sha
-        with:
-          ref: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
-          length: 41
+      # - uses: matheusraz/ref-sha@v1
+      #   id: get-sha
+      #   with:
+      #     ref: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
+      #     length: 41
 
 
       - name: Get all files that have changed
@@ -92,7 +92,8 @@ jobs:
             !app/*/tests/
             !app/*/migrations/
           # base_sha: ${{ steps.setSHAs.outputs.base }}
-          base_sha: ${{ steps.get-sha.outputs.sha }}
+          # base_sha: ${{ steps.get-sha.outputs.sha }}
+          base_sha: ${{ env.NX_BASE }}
 
 
       - name: List all changed files
