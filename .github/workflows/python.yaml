@@ -75,6 +75,13 @@ jobs:
           main-branch-name: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
 
 
+      - uses: matheusraz/ref-sha@v1
+        id: get-sha
+        with:
+          ref: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
+          length: 41
+
+
       - name: Get all files that have changed
         id: changed-files
         if: ${{ github.ref_name != 'master' && github.ref_name != 'development' && github.ref_type != 'tag' }}
@@ -84,7 +91,8 @@ jobs:
             **.py
             !app/*/tests/
             !app/*/migrations/
-          base_sha: ${{ steps.setSHAs.outputs.base }}
+          # base_sha: ${{ steps.setSHAs.outputs.base }}
+          base_sha: ${{ steps.get-sha.outputs.sha }}
 
 
       - name: List all changed files
