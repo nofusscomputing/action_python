@@ -227,6 +227,10 @@ jobs:
           pip install -r requirements_test.txt
 
 
+      - run: |
+          echo "::remove-matcher owner=python::"
+
+
       - name: Run Tests
         id: run-unit-test
         continue-on-error: true
@@ -308,6 +312,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements_test.txt
 
+
+      - run: |
+          echo "::remove-matcher owner=python::"
 
       - name: Run Tests
         id: run-functional-test
