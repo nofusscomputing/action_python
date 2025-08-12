@@ -40,7 +40,6 @@ jobs:
     steps:
 
 
-
       - uses: actions/checkout@v4
 
 
@@ -115,8 +114,7 @@ jobs:
     name: Publish Version Badge endpoint files
     if: ${{ github.ref_name == 'master' || github.ref_name == 'development' }}
     needs:
-      - unit-test
-      - report
+      - integration-test
     runs-on: ubuntu-latest
     steps:
 
