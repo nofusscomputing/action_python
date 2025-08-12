@@ -5,9 +5,19 @@ name: 'Integration Test'
 on:
   workflow_call:
     inputs:
+      POSTGRES_VERSIONS:
+        default: "[ '13', '14', '15', '16', '17' ]"
+        description: PostgreSQL Versions to test
+        required: false
+        type: string
       PYTHON_VERSION:
         default: '3.11'
         description: Python Version to use
+        required: false
+        type: string
+      RABBITMQ_VERSIONS:
+        default: "[ '3.12', '3.13', '4.0', '4.1' ]"
+        description: PostgreSQL Versions to test
         required: false
         type: string
     secrets:
@@ -24,8 +34,8 @@ jobs:
     strategy:
       max-parallel: 8
       matrix:
-        postgres-version: [ '13', '14', '15', '16', '17' ]
-        rabbitmq-version: [ '3.12', '3.13', '4.0', '4.1' ]
+        postgres-version: ${{ fromJSON(inputs.POSTGRES_VERSIONS) }}
+        rabbitmq-version: ${{ fromJSON(inputs.RABBITMQ_VERSIONS) }}
     continue-on-error: true
     steps:
 
