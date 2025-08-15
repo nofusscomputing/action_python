@@ -144,7 +144,7 @@ jobs:
       - name: Create RabbitMQ Shields.io Endpoint.json
         shell: bash
         run: |
-          versions=$(echo '${{ inputs.RABBITMQ_VERSIONS }}' | tr -d "[]\"" | tr ',' '|' | xargs)
+          versions=$(echo '${{ inputs.RABBITMQ_VERSIONS }}' | tr -d "[]\"" | tr ',' ' |' | xargs)
           cat <<EOF > badge_endpoint_integration_rabbitmq_versions.json
           {
             "schemaVersion": 1,
