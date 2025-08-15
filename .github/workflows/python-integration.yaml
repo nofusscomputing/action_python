@@ -162,3 +162,150 @@ jobs:
         with:
           name: badge_endpoint_integration_rabbitmq_versions
           path: badge_endpoint_integration_rabbitmq_versions.json
+
+
+      - name: Checkout Endpoint Repo
+        uses: actions/checkout@v4
+        with:
+          repository: 'nofusscomputing/.github'
+          ref: 'master'
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          path: 'endpoint_publish'
+          fetch-depth: '1'
+          show-progress: true
+          submodules: false
+
+
+      - name: Create Publish Directories
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          cd endpoint_publish;
+          echo "[Debug] PWD[${PWD}]";
+          mkdir -p repositories/${{ github.repository }}/${{ github.ref_name }};
+          ls -la;
+
+
+      - name: Create Publish Directories
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          # cd repositories/${{ github.repository }}/${{ github.ref_name }};
+          echo "[Debug] PWD[${PWD}]";
+
+
+      - name: Download Postgres Version Badge Endpoint json
+        uses: actions/download-artifact@v4
+        with:
+          name: badge_endpoint_integration_postgres_versions
+
+
+      - name: Download RabbitMQ Version Badge Endpoint json
+        uses: actions/download-artifact@v4
+        with:
+          name: badge_endpoint_integration_rabbitmq_versions
+
+
+      - name: Add endpoint file
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+
+          echo "[Debug] **************************** - cd endpoint_publish";
+
+          cd endpoint_publish;
+
+          echo "[Debug] **************************** - ls -la";
+
+          ls -la
+
+          echo "[Debug] ****************************";
+
+          echo "[Debug] PWD[${PWD}]";
+
+          echo "[Debug] **************************** - ls -la ../";
+
+          ls -la ../
+
+          echo "[Debug] **************************** - cp ../badge_endpoint_integration_postgres_versions.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_integration_postgres_versions.json";
+
+          cp ../badge_endpoint_integration_postgres_versions.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_integration_postgres_versions.json;
+
+          echo "[Debug] **************************** - cp ../badge_endpoint_integration_rabbitmq_versions.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_integration_rabbitmq_versions.json";
+
+          cp ../badge_endpoint_integration_rabbitmq_versions.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_integration_rabbitmq_versions.json;
+
+          echo "[Debug] **************************** - ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/";
+
+          ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/;
+
+
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "helpdesk@nofusscomputing.com";
+          git config --global user.name "nfc-bot";
+
+
+      - name: Git add
+        id: git-add
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git status;
+          echo "[Debug] ****************************";
+
+          if [ "$(git status -s)" ]; then
+
+            echo "changed=true" > $GITHUB_OUTPUT;
+
+            echo "[Info] Changes need to be committed";
+
+          else
+
+            echo "changed=false" > $GITHUB_OUTPUT;
+
+            echo "[Info] NO changes to be committed";
+
+          fi
+
+          echo "[Debug] ****************************";
+
+          git add .
+
+
+      - name: Git commit
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git commit -m "chore: add versions badge endpount file ${{ github.repository }}/${{ github.ref_name }}"
+
+
+      - name: git push
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git push
