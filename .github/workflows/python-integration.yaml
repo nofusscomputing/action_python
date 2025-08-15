@@ -32,7 +32,7 @@ jobs:
     name: Integration Test
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 8
+      max-parallel: 5
       matrix:
         postgres-version: ${{ fromJSON(inputs.POSTGRES_VERSIONS) }}
         rabbitmq-version: ${{ fromJSON(inputs.RABBITMQ_VERSIONS) }}
