@@ -48,7 +48,7 @@ jobs:
       - name: Git
         run: |
           git fetch -fpvt
-          git tags
+
 
       - name: Set up Docker Compose
         run: |
