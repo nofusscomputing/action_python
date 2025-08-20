@@ -41,6 +41,8 @@ jobs:
 
 
       - uses: actions/checkout@v4
+        with:
+          fetch-tags: 'true'
 
 
       - name: Set up Docker Compose
@@ -122,7 +124,7 @@ jobs:
       - name: Create PostgreSQL Shields.io Endpoint.json
         shell: bash
         run: |
-          versions=$(echo '${{ inputs.POSTGRES_VERSIONS }}' | tr -d "[]\"" | tr ',' '|' | xargs)
+          versions=$(echo '${{ inputs.POSTGRES_VERSIONS }}' | tr -d "[]\"" | tr ',' ' |' | xargs)
           cat <<EOF > badge_endpoint_integration_postgres_versions.json
           {
             "schemaVersion": 1,
