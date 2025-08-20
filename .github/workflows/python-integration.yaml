@@ -45,6 +45,11 @@ jobs:
           fetch-tags: 'true'
 
 
+      - name: Git
+        run: |
+          git fetch -fpvt
+          git tags
+
       - name: Set up Docker Compose
         run: |
           sudo apt-get update
