@@ -49,6 +49,7 @@ jobs:
       - name: Git
         run: |
           git fetch -fpvt
+          echo "latest tag commit $(git rev-list -n 1 $(git describe --tags --abbrev=0)"
 
 
       - name: Set up Docker Compose
