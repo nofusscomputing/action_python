@@ -280,6 +280,14 @@ jobs:
           path: .coverage
           include-hidden-files: true
 
+      - name: Upload any logs
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: unit-test-centurion-logs-${{ matrix.python-version }}
+          path: app/logs/*
+          include-hidden-files: true
+
 
   functional-test:
     name: Functional Test
@@ -363,6 +371,14 @@ jobs:
         with:
           name: coverage-rc-functional-${{ matrix.python-version }}
           path: .coverage
+          include-hidden-files: true
+
+      - name: Upload any logs
+        uses: actions/upload-artifact@v4
+        if: success() || failure()
+        with:
+          name: functional-test-centurion-logs-${{ matrix.python-version }}
+          path: app/logs/*
           include-hidden-files: true
 
 
