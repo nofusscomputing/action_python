@@ -126,6 +126,11 @@ jobs:
           path: log/*
           include-hidden-files: true
 
+      - name: log file check
+        run: |
+          ls -la log/ || true;
+          ls -la app/log/ || true;
+
 
   badge-endpoint-versions:
     name: Publish Version Badge endpoint files

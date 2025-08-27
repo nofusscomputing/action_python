@@ -288,6 +288,11 @@ jobs:
           path: log/*
           include-hidden-files: true
 
+      - name: log file check
+        run: |
+          ls -la log/ || true;
+          ls -la app/log/ || true;
+
 
   functional-test:
     name: Functional Test
@@ -380,6 +385,11 @@ jobs:
           name: functional-test-centurion-logs-${{ matrix.python-version }}
           path: log/*
           include-hidden-files: true
+
+      - name: log file check
+        run: |
+          ls -la log/ || true;
+          ls -la app/log/ || true;
 
 
   combines_report:
