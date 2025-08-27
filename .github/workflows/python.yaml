@@ -285,7 +285,7 @@ jobs:
         if: success() || failure()
         with:
           name: unit-test-centurion-logs-${{ matrix.python-version }}
-          path: app/log/*
+          path: log/*
           include-hidden-files: true
 
 
@@ -378,7 +378,7 @@ jobs:
         if: success() || failure()
         with:
           name: functional-test-centurion-logs-${{ matrix.python-version }}
-          path: app/log/*
+          path: log/*
           include-hidden-files: true
 
 
