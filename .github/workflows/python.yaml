@@ -59,6 +59,10 @@ jobs:
 
             BASE_BRANCH=development
 
+          elif [ "${CURRENT_BRANCH}" == "feat-next-release" ]; then
+
+            BASE_BRANCH=development
+
           else
 
             BASE_BRANCH=feature-next-release
