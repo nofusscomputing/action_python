@@ -127,6 +127,7 @@ jobs:
           include-hidden-files: true
 
       - name: log file check
+        if: success() || failure()
         run: |
           ls -la log/ || true;
           ls -la app/log/ || true;
