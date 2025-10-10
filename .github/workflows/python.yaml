@@ -553,7 +553,7 @@ jobs:
 
       - name: Test Report
         if: success() || failure()
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2.1
         id: test-report
         with:
           # artifact: unit-test-results-${{ matrix.python-version }}
@@ -628,7 +628,7 @@ jobs:
 
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2.1
         id: test-report
         with:
           # artifact: functional-test-results-${{ matrix.python-version }}
