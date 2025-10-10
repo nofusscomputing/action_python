@@ -88,7 +88,7 @@ jobs:
 
       - name: Test Report
         if: success() || failure()
-        uses: dorny/test-reporter@v2.1
+        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3
         id: test-report
         with:
           name: Integration Test Report [python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}]
