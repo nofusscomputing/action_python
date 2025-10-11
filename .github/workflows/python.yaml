@@ -560,6 +560,7 @@ jobs:
           name: Unit Test Report [Python ${{ matrix.python-version }}]
           path: '*.xml'
           reporter: java-junit
+          use-actions-summary: false
 
 
       - name: Trace 'ls -la'
@@ -636,6 +637,7 @@ jobs:
           path: '*.xml'
           reporter: java-junit
           # fail-on-error: false
+          use-actions-summary: false
 
 
       - name: Trace 'ls -la'

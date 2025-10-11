@@ -94,6 +94,7 @@ jobs:
           name: Integration Test Report [python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}]
           path: 'integration.JUnit.xml'
           reporter: java-junit
+          use-actions-summary: false
 
 
       - name: Upload Junit Test Report
