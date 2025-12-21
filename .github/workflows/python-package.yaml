@@ -1,0 +1,22 @@
+---
+name: 'Python Package'
+
+
+on:
+  workflow_call:
+
+
+jobs:
+
+  build-and-inspect-package:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+
+      - uses: hynek/build-and-inspect-python-package@v2
