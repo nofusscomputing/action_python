@@ -1173,6 +1173,9 @@ jobs:
   vulnerability-scan:
     name: PIP file Scan (requirements.txt)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read          # Required to checkout and read repo files
+      security-events: write  # Required to upload SARIF files to Security tab
     steps:
 
 
