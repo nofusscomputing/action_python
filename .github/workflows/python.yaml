@@ -142,7 +142,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements_test.txt
+          pip install -r requirements_dev.txt
 
 
       - name: Lint ${{ matrix.python-version }}
@@ -228,7 +228,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements_test.txt
+          pip install -r requirements_dev.txt
 
 
       - run: |
@@ -327,7 +327,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements_test.txt
+          pip install -r requirements_dev.txt
 
 
       - run: |
@@ -422,7 +422,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r requirements_test.txt
+          pip install -r requirements_dev.txt
 
 
       - name: Trace 'ls -la'
