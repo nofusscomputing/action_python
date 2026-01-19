@@ -1200,6 +1200,13 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
 
+      - name: Upload scan results sarif Report)
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-scan-results-sarif
+          path: trivy-results.sarif
+
+
       - name: Run Trivy vulnerability scanner against requirements.txt (json Report)
         uses: aquasecurity/trivy-action@0.28.0
         with:
