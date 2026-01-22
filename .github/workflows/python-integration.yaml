@@ -89,7 +89,7 @@ jobs:
       - name: Trace
         run: |
           echo "PWD is [${PWD}]";
-          ls -lar
+          ls -laR
 
 
       - name: Test Report

@@ -240,7 +240,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          pytest  --cov-report xml:coverage.xml --cov-report html:coverage/ --cov-report json:coverage_unit.json --junit-xml=unit.JUnit.xml app/**/tests/unit;
+          pytest  --cov-report xml:${PWD}/coverage.xml --cov-report html:${PWD}/coverage/ --cov-report json:${PWD}/coverage_unit.json --junit-xml=${PWD}/unit.JUnit.xml app/**/tests/unit;
           echo coverage=$(echo "$(jq -r '.totals.percent_covered' coverage_unit.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
           echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_unit.json) $(jq -r '.totals.num_branches' coverage_unit.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
@@ -248,7 +248,7 @@ jobs:
       - name: Trace
         run: |
           echo "PWD is [${PWD}]";
-          ls -lar
+          ls -laR
 
 
       - name: Upload Test Report
@@ -344,7 +344,7 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          pytest --cov-report xml:functional-coverage.xml --cov-report html:coverage/functional/ --cov-report json:coverage_functional.json --junit-xml=functional.JUnit.xml app/**/tests/functional;
+          pytest --cov-report xml:${PWD}/functional-coverage.xml --cov-report html:${PWD}/coverage/functional/ --cov-report json:${PWD}/coverage_functional.json --junit-xml=${PWD}/functional.JUnit.xml app/**/tests/functional;
           echo coverage=$(echo "$(jq -r '.totals.percent_covered' coverage_functional.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
           echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_functional.json) $(jq -r '.totals.num_branches' coverage_functional.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
@@ -352,7 +352,7 @@ jobs:
       - name: Trace
         run: |
           echo "PWD is [${PWD}]";
-          ls -lar
+          ls -laR
 
 
       - name: Upload Test Report
