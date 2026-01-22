@@ -86,6 +86,12 @@ jobs:
           make test-integration
 
 
+      - name: Trace
+        run: |
+          echo "PWD is [${PWD}]";
+          ls -lar
+
+
       - name: Test Report
         if: success() || failure()
         uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3

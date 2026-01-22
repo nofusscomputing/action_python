@@ -245,6 +245,12 @@ jobs:
           echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_unit.json) $(jq -r '.totals.num_branches' coverage_unit.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
 
+      - name: Trace
+        run: |
+          echo "PWD is [${PWD}]";
+          ls -lar
+
+
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
         if: success() || failure()
@@ -341,6 +347,12 @@ jobs:
           pytest --cov-report xml:functional-coverage.xml --cov-report html:coverage/functional/ --cov-report json:coverage_functional.json --junit-xml=functional.JUnit.xml app/**/tests/functional;
           echo coverage=$(echo "$(jq -r '.totals.percent_covered' coverage_functional.json) " | awk '{printf "%.4f%%", $1"%"}') > $GITHUB_OUTPUT
           echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' coverage_functional.json) $(jq -r '.totals.num_branches' coverage_functional.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
+
+
+      - name: Trace
+        run: |
+          echo "PWD is [${PWD}]";
+          ls -lar
 
 
       - name: Upload Test Report
