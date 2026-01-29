@@ -36,6 +36,7 @@ jobs:
       py-changed-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
       py-any-changed: ${{ steps.changed-files.outputs.any_changed}}
       tesy-changed-files: ${{ steps.changed-files.outputs.test_changed_files }}
+      requirements_set: ${{ steps.requirements_set.outputs.requirements }}
     steps:
 
 
@@ -111,6 +112,16 @@ jobs:
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
+
+
+
+      - name: Find requirements files
+        id: requirements_set
+        run: |
+          files=$(ls requirements*.txt | jq -R . | jq -s .)
+          echo "requirements<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
 
 
@@ -1185,16 +1196,22 @@ jobs:
   vulnerability-scan:
     name: PIP file Scan (requirements.txt)
     runs-on: ubuntu-latest
+    needs:
+      - init
     permissions:
       contents: read          # Required to checkout and read repo files
       security-events: write  # Required to upload SARIF files to Security tab
+    strategy:
+      fail-fast: false
+      matrix:
+        requirements: ${{ fromJSON(needs.init.outputs.requirements_set) }}
     steps:
 
 
       - uses: actions/checkout@v4
 
 
-      - name: Run Trivy vulnerability scanner against requirements.txt
+      - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }}
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: 'fs'
@@ -1202,24 +1219,24 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          scan-ref: requirements.txt
+          scan-ref: ${{ matrix.requirements }}
           exit-code: 0
 
 
-      - name: Upload requirements.txt scan results to GitHub Security tab
+      - name: Upload ${{ matrix.requirements }} scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
 
-      - name: Upload scan results sarif Report)
+      - name: Upload scan results ${{ matrix.requirements }} sarif Report
         uses: actions/upload-artifact@v4
         with:
-          name: python-scan-results-sarif
+          name: python-scan-results-${{ matrix.requirements }}-sarif
           path: trivy-results.sarif
 
 
-      - name: Run Trivy vulnerability scanner against requirements.txt (json Report)
+      - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }} (json Report)
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: 'fs'
@@ -1227,14 +1244,14 @@ jobs:
           format: 'json'
           output: 'scan-results.json'
           severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          scan-ref: requirements.txt
+          scan-ref: ${{ matrix.requirements }}
           exit-code: 0
 
 
-      - name: Upload scan results (json Report)
+      - name: Upload scan results ${{ matrix.requirements }}(json Report)
         uses: actions/upload-artifact@v4
         with:
-          name: python-scan-results-json
+          name: python-scan-results-${{ matrix.requirements }}-json
           path: scan-results.json
 
 
@@ -1242,15 +1259,20 @@ jobs:
   vulnerability-report:
     name: Create Reports
     needs:
+      - init
       - vulnerability-scan
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        requirements: ${{ fromJSON(needs.init.outputs.requirements_set) }}
     steps:
 
 
-      - name: Fetch scan results (json Report)
+      - name: Fetch scan results ${{ matrix.requirements }}(json Report)
         uses: actions/download-artifact@v4
         with:
-          name: python-scan-results-json
+          name: python-scan-results-${{ matrix.requirements }}-json
 
 
       - name: Create Vulnerabilities (Critical/High)
@@ -1279,7 +1301,7 @@ jobs:
 
           jq -r '
           [
-          "# Python Scan Results (requirements.txt)",
+          "# Python Scan Results (${{ matrix.requirements }})",
           "",
           "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
           "**File:** _" + ( .ArtifactName // "" ) + "_",
@@ -1294,7 +1316,7 @@ jobs:
             def to_md:
             "| " + (.VulnerabilityID // "") + " | " + (.PkgName // "") + " | " + (.InstalledVersion // "") + " | " + (.Severity // "") + " | " + (.Title // "") + " |";
             [
-            "## High and Critical Vulnerabilities",
+            "## High and Critical Vulnerabilities - ${{ matrix.requirements }}",
             "",
             "| Vulnerability ID | Package | Version | Severity | Description |",
             "| --------- | ----- | ----- | ----- | -------|",
@@ -1339,7 +1361,7 @@ jobs:
 
           jq -r '
           [
-          "# Full Scan Results",
+          "# Full Scan Results - ${{ matrix.requirements }}",
           "",
           "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
           "**File:** _" + ( .ArtifactName // "" ) + "_",
@@ -1373,21 +1395,21 @@ jobs:
       - name: Upload scan results
         uses: actions/upload-artifact@v4
         with:
-          name: python-vulnerability-report
+          name: python-vulnerability-report-${{ matrix.requirements }}
           path: vulnerability-report.md
 
 
       - name: Upload scan results
         uses: actions/upload-artifact@v4
         with:
-          name: python-vulnerability-report-full
+          name: python-vulnerability-report-full-${{ matrix.requirements }}
           path: full-vulnerability-report.md
 
 
       - uses: dtinth/markdown-report-action@v1
         with:
-          name: Python Vulnerability Report
-          title: Python Vulnerability Report
+          name: Python Vulnerability Report - ${{ matrix.requirements }}
+          title: Python Vulnerability Report - ${{ matrix.requirements }}
           body-file: full-vulnerability-report.md
 
 
@@ -1395,10 +1417,15 @@ jobs:
   pull-request-report-comment:
     if: ${{ github.ref_type != 'tag' }}
     needs:
+      - init
       - vulnerability-scan
       - vulnerability-report
     runs-on: ubuntu-latest
     name: Comment on Pull Request (Python Scan)
+    strategy:
+      fail-fast: false
+      matrix:
+        requirements: ${{ fromJSON(needs.init.outputs.requirements_set) }}
     steps:
 
 
@@ -1413,7 +1440,7 @@ jobs:
         if: ${{ steps.finder.outputs.pr != '' }}
         uses: actions/download-artifact@v4
         with:
-          name: python-vulnerability-report
+          name: python-vulnerability-report-${{ matrix.requirements }}
 
 
       - name: Capture scan results
@@ -1430,6 +1457,6 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           number: ${{ steps.finder.outputs.pr }}
-          header: Python requirements.txt Scan Results
+          header: Python ${{ matrix.requirements }} Scan Results
           message: |
             ${{ env.report }}
