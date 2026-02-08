@@ -110,28 +110,17 @@ jobs:
           name: integration-test-report-junit-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
           path: integration.JUnit.xml
 
-      - name: Upload Artifacts - Logs
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: integration-logs-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
-          path: test/volumes/log/*
-
-
-      - name: Upload Artifacts - Tests
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: integration-tests-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
-          path: test/volumes/artifacts/*
-
-      - name: Upload any logs from tests
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: integration-test-centurion-logs-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
-          path: log/*
-          include-hidden-files: true
+          path: |
+            app/log/
+            artifacts/
+            log/
+            test/volumes/log/
+            test/volumes/artifacts/
 
       - name: log file check
         if: success() || failure()
