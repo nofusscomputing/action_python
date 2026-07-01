@@ -5,6 +5,10 @@ name: 'Python'
 on:
   workflow_call:
     inputs:
+      BRANCH:
+        description: Branch to run the Vulnerability scan on
+        required: false
+        type: string
       DEFAULT_ONLY:
         default: false
         description: Should this run be for the default python version only
@@ -1267,8 +1271,14 @@ jobs:
         requirements: ${{ fromJSON(needs.init.outputs.requirements_set) }}
     steps:
 
+      - name: Resolve branch
+        run: |
+          echo "BRANCH=${{ inputs.BRANCH || github.ref_name }}" >> $GITHUB_ENV
+
 
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BRANCH }}
 
 
       - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }}
