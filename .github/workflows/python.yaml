@@ -808,7 +808,7 @@ jobs:
 
       - name: create status check/comment for code coverage results
         id: jest_coverage_check
-        uses: im-open/process-code-coverage-summary@v2.3.0
+        uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
         if: success() || failure()
         with:
           github-token: ${{ github.token }}
@@ -879,7 +879,7 @@ jobs:
 
       - name: create status check/comment for code coverage results
         id: jest_coverage_check
-        uses: im-open/process-code-coverage-summary@v2.3.0
+        uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
         if: success() || failure()
         with:
           github-token: ${{ github.token }}
