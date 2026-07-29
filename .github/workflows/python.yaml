@@ -1282,7 +1282,7 @@ jobs:
 
 
       - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }}
-        uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478    # 0.34.2
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25    # v0.36.0
         with:
           scan-type: 'fs'
           ignore-unfixed: false
@@ -1308,7 +1308,7 @@ jobs:
 
       - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }} (json Report)
         if: github.event_name != 'schedule'
-        uses: aquasecurity/trivy-action@97e0b3872f55f89b95b2f65b3dbab56962816478    # 0.34.2
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25    # v0.36.0
         with:
           scan-type: 'fs'
           ignore-unfixed: false
