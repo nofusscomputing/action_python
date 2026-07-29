@@ -317,7 +317,7 @@ jobs:
 
 
       - name: Upload Test Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: unit-test-results-${{ matrix.python-version }}
@@ -325,7 +325,7 @@ jobs:
 
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-report-${{ matrix.python-version }}
@@ -333,7 +333,7 @@ jobs:
 
 
       - name: Upload Coverage Report (json)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-report-json-${{ matrix.python-version }}
@@ -341,14 +341,14 @@ jobs:
 
 
       - name: Upload Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage/*
 
       - name: Upload Unit Coverage (rc)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-rc-unit-${{ matrix.python-version }}
@@ -356,7 +356,7 @@ jobs:
           include-hidden-files: true
 
       - name: Upload any logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: unit-test-centurion-logs-${{ matrix.python-version }}
@@ -423,7 +423,7 @@ jobs:
 
 
       - name: Upload Test Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-test-results-${{ matrix.python-version }}
@@ -431,7 +431,7 @@ jobs:
 
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-coverage-report-${{ matrix.python-version }}
@@ -439,7 +439,7 @@ jobs:
 
 
       - name: Upload Coverage Report (json)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-coverage-report-json-${{ matrix.python-version }}
@@ -447,14 +447,14 @@ jobs:
 
 
       - name: Upload Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-coverage-${{ matrix.python-version }}
           path: coverage/functional/*
 
       - name: Upload Functional Coverage (rc)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-rc-functional-${{ matrix.python-version }}
@@ -462,7 +462,7 @@ jobs:
           include-hidden-files: true
 
       - name: Upload any logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-test-centurion-logs-${{ matrix.python-version }}
@@ -561,7 +561,7 @@ jobs:
 
 
       - name: Upload Combined Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: coverage-combined-unit-function-html-${{ matrix.python-version }}
@@ -669,7 +669,7 @@ jobs:
 
 
       - name: Upload Badge Endpoint json
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: unit-test-shield-endpoint-${{ matrix.python-version }}
@@ -748,7 +748,7 @@ jobs:
 
 
       - name: Upload Badge Endpoint json
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-test-shield-endpoint-${{ matrix.python-version }}
@@ -818,7 +818,7 @@ jobs:
           update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
 
       - name: Upload Coverage Summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: code-coverage-results-${{ matrix.python-version }}
@@ -890,7 +890,7 @@ jobs:
           update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
 
       - name: Upload Coverage Summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: functional-code-coverage-results-${{ matrix.python-version }}
@@ -1300,7 +1300,7 @@ jobs:
 
 
       - name: Upload scan results ${{ matrix.requirements }} sarif Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: python-scan-results-${{ matrix.requirements }}-sarif
           path: trivy-results.sarif
@@ -1321,7 +1321,7 @@ jobs:
 
       - name: Upload scan results ${{ matrix.requirements }}(json Report)
         if: github.event_name != 'schedule'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: python-scan-results-${{ matrix.requirements }}-json
           path: scan-results.json
@@ -1466,14 +1466,14 @@ jobs:
 
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: python-vulnerability-report-${{ matrix.requirements }}
           path: vulnerability-report.md
 
 
       - name: Upload scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: python-vulnerability-report-full-${{ matrix.requirements }}
           path: full-vulnerability-report.md

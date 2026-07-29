@@ -104,14 +104,14 @@ jobs:
 
 
       - name: Upload Junit Test Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: integration-test-report-junit-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
           path: integration.JUnit.xml
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
         with:
           name: integration-logs-python_${{ inputs.PYTHON_VERSION }}-postgres_${{ matrix.postgres-version }}-rabbitmq_${{ matrix.rabbitmq-version }}
@@ -154,7 +154,7 @@ jobs:
 
 
       - name: Upload Badge Endpoint json
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: badge_endpoint_integration_postgres_versions
           path: badge_endpoint_integration_postgres_versions.json
@@ -177,7 +177,7 @@ jobs:
 
 
       - name: Upload Badge Endpoint json
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         with:
           name: badge_endpoint_integration_rabbitmq_versions
           path: badge_endpoint_integration_rabbitmq_versions.json
