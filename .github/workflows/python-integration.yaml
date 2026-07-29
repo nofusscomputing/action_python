@@ -23,7 +23,7 @@ on:
     secrets:
       WORKFLOW_TOKEN:
         description: "token to clone with"
-        required: true
+        required: false
 
 
 jobs:
@@ -131,7 +131,10 @@ jobs:
 
   badge-endpoint-versions:
     name: Publish Version Badge endpoint files
-    if: ${{ github.ref_name == 'master' || github.ref_name == 'development' }}
+    if: >-
+      (github.ref_name == 'master' || github.ref_name == 'development')
+        &&
+      github.repository == 'nofusscomputing/centurion_erp'
     needs:
       - integration-test
     runs-on: ubuntu-latest

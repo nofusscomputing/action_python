@@ -37,7 +37,7 @@ on:
     secrets:
       WORKFLOW_TOKEN:
         description: "token to clone with"
-        required: true
+        required: false
 
 
 env:
@@ -900,7 +900,12 @@ jobs:
 
   badge-endpoint:
     name: Publish Badge endpoint files
-    if: ${{ (github.ref_name == 'master' || github.ref_name == 'development') && github.event_name != 'schedule' }}
+    if: >-
+      (github.ref_name == 'master' || github.ref_name == 'development')
+        &&
+      github.event_name != 'schedule'
+        &&
+      github.repository == 'nofusscomputing/centurion_erp'
     needs:
       - unit-test
       - report
@@ -1080,7 +1085,12 @@ jobs:
 
   badge-endpoint-functional:
     name: Publish Badge endpoint files (Functional)
-    if: ${{ (github.ref_name == 'master' || github.ref_name == 'development') && github.event_name != 'schedule' }}
+    if: >-
+      (github.ref_name == 'master' || github.ref_name == 'development')
+        &&
+      github.event_name != 'schedule'
+        &&
+      github.repository == 'nofusscomputing/centurion_erp'
     needs:
       - functional-test
       - functional-report
