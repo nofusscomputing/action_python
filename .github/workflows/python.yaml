@@ -53,6 +53,7 @@ jobs:
       changed-files: ${{ steps.changed-files.outputs.project_all_changed_files }}
       doc-changed-files: ${{ steps.changed-files.outputs.docs_changed_files }}
       py-changed-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+      pip-any-changed: ${{ steps.changed-files-pip.outputs.any_changed}}
       py-any-changed: ${{ steps.changed-files.outputs.any_changed}}
       tesy-changed-files: ${{ steps.changed-files.outputs.test_changed_files }}
       requirements_set: ${{ steps.requirements_set.outputs.requirements }}
@@ -161,6 +162,28 @@ jobs:
         run: |
           echo "changed: ${ALL_CHANGED_FILES}":
           for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
+
+
+
+      - name: Get pip-file-changes
+        id: changed-files-pip
+        if: ${{ github.ref_name != 'master' && github.ref_name != 'development' && github.ref_type != 'tag' }}
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: |
+            requiremen*.txt
+          base_sha: ${{ steps.base-branch-name.outputs.BASE_BRANCH }}
+
+
+      - name: List all changed pip files
+        # if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_PIP_FILES: ${{ steps.changed-files-pip.outputs.all_changed_and_modified_files }}
+        run: |
+          echo "changed: ${ALL_CHANGED_PIP_FILES}":
+          for file in ${ALL_CHANGED_PIP_FILES}; do
             echo "$file was changed"
           done
 
