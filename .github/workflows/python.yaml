@@ -513,7 +513,7 @@ jobs:
 
 
       - name: Download Unit Test Report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         if: success() || failure()
         with:
           name: coverage-rc-unit-${{ matrix.python-version }}
@@ -527,7 +527,7 @@ jobs:
 
 
       - name: Download Functional Test Report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         if: success() || failure()
         with:
           name: coverage-rc-functional-${{ matrix.python-version }}
@@ -622,7 +622,7 @@ jobs:
 
 
       - name: Download Test Report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         if: success() || failure()
         with:
           name: unit-test-results-${{ matrix.python-version }}
@@ -701,7 +701,7 @@ jobs:
 
 
       - name: Download Test Report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         if: success() || failure()
         with:
           name: functional-test-results-${{ matrix.python-version }}
@@ -774,7 +774,7 @@ jobs:
           ls -l;
 
       - name: Download Coverage Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: coverage-report-${{ matrix.python-version }}
           github-token: ${{ github.token }}
@@ -844,7 +844,7 @@ jobs:
           ls -l;
 
       - name: Download Coverage Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         if: success() || failure()
         with:
           name: functional-coverage-report-${{ matrix.python-version }}
@@ -942,7 +942,7 @@ jobs:
 
 
       - name: Download Badge Endpoint json
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: unit-test-shield-endpoint-${{ matrix.python-version }}
 
@@ -1122,7 +1122,7 @@ jobs:
 
 
       - name: Download Badge Endpoint json
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: functional-test-shield-endpoint-${{ matrix.python-version }}
 
@@ -1343,7 +1343,7 @@ jobs:
 
 
       - name: Fetch scan results ${{ matrix.requirements }}(json Report)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: python-scan-results-${{ matrix.requirements }}-json
 
@@ -1511,7 +1511,7 @@ jobs:
 
       - name: Fetch Vulnerability Report
         if: ${{ steps.finder.outputs.pr != '' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: python-vulnerability-report-${{ matrix.requirements }}
 
