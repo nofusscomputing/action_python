@@ -74,7 +74,7 @@ jobs:
           fi;
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
         with:
           # fetch-depth: 100
           fetch-depth: 0
@@ -189,7 +189,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
         if: ${{ github.ref_name != 'master' && github.ref_name != 'development' && github.ref_type != 'tag' }}
 
 
@@ -280,7 +280,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
 
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -387,7 +387,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
 
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -490,7 +490,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
 
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -612,7 +612,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
 
 
       - name: Trace 'ls -la'
@@ -691,7 +691,7 @@ jobs:
     steps:
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
 
 
       - name: Trace 'ls -la'
@@ -912,7 +912,7 @@ jobs:
     steps:
 
       - name: Checkout Endpoint Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
         with:
           repository: 'nofusscomputing/.github'
           ref: 'master'
@@ -1092,7 +1092,7 @@ jobs:
     steps:
 
       - name: Checkout Endpoint Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
         with:
           repository: 'nofusscomputing/.github'
           ref: 'master'
@@ -1276,7 +1276,7 @@ jobs:
           echo "BRANCH=${{ inputs.BRANCH || github.ref_name }}" >> $GITHUB_ENV
 
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
         with:
           ref: ${{ env.BRANCH }}
 
