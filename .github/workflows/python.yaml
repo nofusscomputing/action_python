@@ -1527,7 +1527,7 @@ jobs:
 
       - name: Comment scan results on PR
         if: ${{ steps.finder.outputs.pr != '' }}
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88
         with:
           number: ${{ steps.finder.outputs.pr }}
           header: Python ${{ matrix.requirements }} Scan Results
