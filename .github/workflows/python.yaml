@@ -636,7 +636,7 @@ jobs:
 
       - name: Test Report
         if: success() || failure()
-        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
         id: test-report
         with:
           # artifact: unit-test-results-${{ matrix.python-version }}
@@ -714,7 +714,7 @@ jobs:
 
 
       - name: Test Report
-        uses: dorny/test-reporter@dc3a92680fcc15842eef52e8c4606ea7ce6bd3f3
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
         id: test-report
         with:
           # artifact: functional-test-results-${{ matrix.python-version }}
@@ -1537,7 +1537,7 @@ jobs:
 
       - name: Comment scan results on PR
         if: ${{ steps.finder.outputs.pr != '' }}
-        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88    # v3.0.5
         with:
           number: ${{ steps.finder.outputs.pr }}
           header: Python ${{ matrix.requirements }} Scan Results
