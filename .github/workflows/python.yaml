@@ -1339,27 +1339,6 @@ jobs:
           path: trivy-results.sarif
 
 
-      - name: Run Trivy vulnerability scanner against ${{ matrix.requirements }} (json Report)
-        if: github.event_name != 'schedule'
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25    # v0.36.0
-        with:
-          scan-type: 'fs'
-          ignore-unfixed: false
-          format: 'json'
-          output: 'scan-results.json'
-          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
-          scan-ref: ${{ matrix.requirements }}
-          exit-code: 0
-
-
-      - name: Upload scan results ${{ matrix.requirements }}(json Report)
-        if: github.event_name != 'schedule'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
-        with:
-          name: python-scan-results-${{ matrix.requirements }}-json
-          path: scan-results.json
-
-
 
   vulnerability-report:
     name: Create Reports
@@ -1375,127 +1354,61 @@ jobs:
     steps:
 
 
-      - name: Fetch scan results ${{ matrix.requirements }}(json Report)
+      - name: Fetch scan results ${{ matrix.requirements }}(sarif Report)
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
-          name: python-scan-results-${{ matrix.requirements }}-json
+          name: python-scan-results-${{ matrix.requirements }}-sarif
 
 
-      - name: Create Vulnerabilities (Critical/High)
+      - run: |
+          echo "${PWD}" || echo "couldnt PWD";
+
+          echo "1";
+
+          ls -la;
+
+          echo "2";
+
+          mkdir -p ${{ runner.temp }}/_github_home/ || echo "could not make";
+
+          echo "2.1";
+
+          ls -la ${{ runner.temp }}/_github_home/;
+
+          echo "3";
+
+          mv -f trivy-results.sarif ${{ runner.temp }}/_github_home/trivy-results.sarif;
+
+          echo "4";
+
+          ls -la ${{ runner.temp }}/_github_home/;
+
+
+
+      - name: Convert Sarif -> Markdown
+        if: success() || failure()
+        id: sarif-to-markdown
+        uses: 11notes/action-sarif-to-markdown@bc689850bd33a1037ea1d0a609ab4ea14b3c4396   # v1.2.0
+        with:
+          sarif_file: trivy-results.sarif
+
+
+      - name: Print Report
+        run: echo ${{ steps.sarif-to-markdown.outputs.markdown }}
+
+
+      - name: Create Report Artifact
         run: |
-          echo "[Debug] jq -r '.Results'=$(jq -r '.Results' scan-results.json)";
+          ls -la ${{ runner.temp }}/_github_home/sarif.md;
 
-          if [ "$(jq -r '.Results' scan-results.json)" != 'null' ] && [ "0$(jq -r '.Results' scan-results.json)" != '0' ]; then
-
-            if [ "$(jq -r '.Results[] | .Vulnerabilities' scan-results.json)" != 'null' ] && [ "0$(jq -r '.Results[] | .Vulnerabilities' scan-results.json)" != '0' ]; then
-
-              not_empty="$(jq -r '.Results[] | .Vulnerabilities[]' scan-results.json)";
-
-            else
-
-              not_empty="";
-
-            fi
-
-          else
-
-            not_empty="";
-
-          fi
-
-          echo "[Debug] not_empty=${not_empty}";
-
-          jq -r '
-          [
-          "# Python Scan Results (${{ matrix.requirements }})",
-          "",
-          "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
-          "**File:** _" + ( .ArtifactName // "" ) + "_",
-          ""
-          ] | join("\n")
-          ' scan-results.json > vulnerability-report.md
-
-          if [ "$not_empty" ]; then
-            jq -r '
-            def hr(severity):
-            if severity == "HIGH" or severity == "CRITICAL" then true else false end;
-            def to_md:
-            "| " + (.VulnerabilityID // "") + " | " + (.PkgName // "") + " | " + (.InstalledVersion // "") + " | " + (.Severity // "") + " | " + (.Title // "") + " |";
-            [
-            "## High and Critical Vulnerabilities - ${{ matrix.requirements }}",
-            "",
-            "| Vulnerability ID | Package | Version | Severity | Description |",
-            "| --------- | ----- | ----- | ----- | -------|",
-            (.Results[] | .Vulnerabilities[] | select(hr(.Severity)) | to_md),
-            ""
-            ] | join("\n")
-            ' scan-results.json >> vulnerability-report.md
-
-          else
-
-            echo "**Nothing Found**" >> vulnerability-report.md
-
-          fi;
-
-
-
-      - name: Create Full Vulnerabilities
-        run: |
-          echo "[Debug] jq -r '.Results'=$(jq -r '.Results' scan-results.json)";
-
-          if [ "$(jq -r '.Results' scan-results.json)" != 'null' ] && [ "0$(jq -r '.Results' scan-results.json)" != '0' ]; then
-
-            if [ "$(jq -r '.Results[] | .Vulnerabilities' scan-results.json)" != 'null' ] && [ "0$(jq -r '.Results[] | .Vulnerabilities' scan-results.json)" != '0' ]; then
-
-              not_empty="$(jq -r '.Results[] | .Vulnerabilities[]' scan-results.json)";
-
-            else
-
-              not_empty="";
-
-            fi
-
-          else
-
-            not_empty="";
-
-          fi
-
-
-          echo "[Debug] not_empty=${not_empty}";
-
-
-          jq -r '
-          [
-          "# Full Scan Results - ${{ matrix.requirements }}",
-          "",
-          "**Scan Date:** _" + ( .CreatedAt // "" ) + "_",
-          "**File:** _" + ( .ArtifactName // "" ) + "_",
-          ""
-          ] | join("\n")
-          ' scan-results.json > full-vulnerability-report.md
-
-          if [ "$not_empty" ]; then
-            jq -r '
-            def hr(severity):
-            if severity == "HIGH" or severity == "CRITICAL" then true else true end;
-            def to_md:
-            "| " + (.VulnerabilityID // "") + " | " + (.PkgName // "") + " | " + (.InstalledVersion // "") + " | " + (.Severity // "") + " | " + (.Title // "") + " |";
-            [
-            "## Vulnerabilities",
-            "",
-            "| Vulnerability ID | Package | Version | Severity | Description |",
-            "| --------- | ----- | ----- | ----- | -------|",
-            (.Results[] | .Vulnerabilities[] | select(.Severity) | to_md),
-            ""
-            ] | join("\n")
-            ' scan-results.json >> full-vulnerability-report.md
-
-          else
-
-            echo "**Nothing Found**" >> full-vulnerability-report.md
-
-          fi;
+          echo "## PIP File Scan of \`${{ matrix.requirements }}\`" > vulnerability-report.md;
+          echo "" >> vulnerability-report.md;
+          echo ">[!tip]" >> vulnerability-report.md;
+          echo ">" >> vulnerability-report.md;
+          echo "> _If this report shows nothing, it means there was nothing found._" >> vulnerability-report.md;
+          echo "" >> vulnerability-report.md;
+          echo -n "#" >> vulnerability-report.md;
+          cat ${{ runner.temp }}/_github_home/sarif.md >> vulnerability-report.md;
 
 
       - name: Upload scan results
@@ -1503,20 +1416,6 @@ jobs:
         with:
           name: python-vulnerability-report-${{ matrix.requirements }}
           path: vulnerability-report.md
-
-
-      - name: Upload scan results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
-        with:
-          name: python-vulnerability-report-full-${{ matrix.requirements }}
-          path: full-vulnerability-report.md
-
-
-      - uses: dtinth/markdown-report-action@v1
-        with:
-          name: Python Vulnerability Report - ${{ matrix.requirements }}
-          title: Python Vulnerability Report - ${{ matrix.requirements }}
-          body-file: full-vulnerability-report.md
 
 
 
