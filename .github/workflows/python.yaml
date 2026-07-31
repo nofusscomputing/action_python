@@ -291,6 +291,7 @@ jobs:
 
           fi;
 
+
           echo "Exit code was $EXITCODE";
 
           if [ "${EXITCODE}" ]; then
@@ -306,29 +307,135 @@ jobs:
           echo "Exit code was ${EXITCODE}";
 
 
-      - name: Fail on Error
-        if: steps.lint.outputs.exit_code == 1
+
+      - name: Lint ${{ matrix.python-version }} Bitwise check exit code
+        id: lint-exit-type
+        if: inputs.LINT && needs.init.outputs.py-any-changed
+        shell: bash
+        env:
+          EXITCODE: ${{ steps.lint.outputs.exit_code }}
+        run: |
+          # Check error code for exit type
+          # https://pylint.pycqa.org/en/latest/user_guide/usage/run.html#exit-codes
+
+          echo "PyLint uses an exit code that is bit-encoded which is bitwise checked for the severities found. ";
+
+          if (( $EXITCODE & 1 )); then
+
+            echo "Bitwise found: fatal";
+
+            echo "fatal=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "fatal=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+          if (( $EXITCODE & 2 )); then
+
+            echo "Bitwise found: error";
+
+            echo "error=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "error=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+          if (( $EXITCODE & 4 )); then
+
+            echo "Bitwise found: warning";
+
+            echo "warning=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "warning=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+          if (( $EXITCODE & 8 )); then
+
+            echo "Bitwise found: refactor";
+
+            echo "refactor=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "refactor=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+          if (( $EXITCODE & 16 )); then
+
+            echo "Bitwise found: convention";
+
+            echo "convention=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "convention=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+          if (( $EXITCODE & 32 )); then
+
+            echo "Bitwise found: usage error";
+
+            echo "usage_error=true" >> $GITHUB_OUTPUT
+
+          else
+
+            echo "usage_error=false" >> $GITHUB_OUTPUT
+
+          fi
+
+
+
+      - name: Fail on Fatal
+        if: steps.lint-exit-type.outputs.fatal == 'true'
         shell: bash
         run: |
           echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
 
 
-      - name: Fail on Fatal
-        if: steps.lint.outputs.exit_code == 2
+      - name: Fail on Error
+        if: steps.lint-exit-type.outputs.error == 'true'
         shell: bash
         run: |
           echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
 
 
       - name: Fail on Warning
-        if: inputs.LINT_ERROR_ON_WARNING && steps.lint.outputs.exit_code == 4
+        if: steps.lint-exit-type.outputs.warning == 'true'
+        shell: bash
+        run: |
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
+      - name: Fail on Refactor
+        if: steps.lint-exit-type.outputs.refactor == 'true'
+        shell: bash
+        run: |
+          echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
+
+
+      - name: Fail on Convention
+        if: steps.lint-exit-type.outputs.convention == 'true'
         shell: bash
         run: |
           echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
 
 
       - name: Fail on Usage Error
-        if: steps.lint.outputs.exit_code == 32
+        if: steps.lint-exit-type.outputs.usage_error == 'true'
         shell: bash
         run: |
           echo "Lint exit code was ${{ steps.lint.outputs.exit_code }}"
