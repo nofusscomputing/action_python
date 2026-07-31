@@ -52,7 +52,7 @@ jobs:
     outputs:
       changed-files: ${{ steps.changed-files.outputs.project_all_changed_files }}
       doc-changed-files: ${{ steps.changed-files.outputs.docs_changed_files }}
-      py-changed-files: ${{ steps.changed-files.outputs.all_changed_and_modified_files }}
+      py-changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
       pip-any-changed: ${{ steps.changed-files-pip.outputs.any_changed}}
       py-any-changed: ${{ steps.changed-files.outputs.any_changed}}
       tesy-changed-files: ${{ steps.changed-files.outputs.test_changed_files }}
@@ -231,6 +231,21 @@ jobs:
           pip install -r requirements_dev.txt
 
 
+
+      #
+      # PyLint C value
+      #
+      # [I]nformational messages that Pylint emits (do not contribute to your analysis score)
+
+      # [R]efactor for a "good practice" metric violation
+
+      # [C]onvention for coding standard violation
+
+      # [W]arning for stylistic problems, or minor programming issues
+
+      # [E]rror for important programming issues (i.e. most probably bug)
+
+      # [F]atal for errors which prevented further processing
       - name: Lint ${{ matrix.python-version }}
         id: lint
         if: inputs.LINT && needs.init.outputs.py-any-changed
@@ -238,7 +253,43 @@ jobs:
         env:
           PY_CHANGED_FILES: ${{ needs.init.outputs.py-changed-files }}
         run: |
-          pylint --py-version ${{ matrix.python-version }} --msg-template "::notice file={path},line={line},endLine={end_line},title={msg_id}::{msg} see https://pylint.pycqa.org/en/latest/user_guide/messages/{category}/{symbol}.html" ${PY_CHANGED_FILES} || EXITCODE=$?
+          set +e;
+
+          echo "Primary Python version [${{ inputs.PYTHON_VERSION }}], Matrix Python Version [${{ matrix.python-version }}]";
+
+          if [ "${{ inputs.PYTHON_VERSION }}" != "${{ matrix.python-version }}" ]; then
+
+            echo "Only show Github annotations for primary Python version: ${{ inputs.PYTHON_VERSION }}";
+
+              pylint \
+                --py-version ${{ matrix.python-version }} \
+                ${PY_CHANGED_FILES} || EXITCODE=$?
+
+          else
+
+              # available are debug, notice, warning, error
+
+              export I=debug;
+              export R=notice;
+              export C=warning;
+              export W=warning;
+              export E=error;
+              export F=error;
+
+              pylint --py-version ${{ matrix.python-version }} --msg-template "::${C} file={path},line={line},endLine={end_line},title={msg_id}::{msg} see <https://pylint.pycqa.org/en/latest/user_guide/messages/{category}/{symbol}.html>" ${PY_CHANGED_FILES} | envsubst;
+
+              export EXITCODE=${PIPESTATUS[0]}
+
+              # pylint \
+              #   --py-version ${{ matrix.python-version }} \
+              #   --msg-template "::notice \
+              #         file={path}, \
+              #         line={line}, \
+              #         endLine={end_line}, \
+              #         title={msg_id}::{msg} see https://pylint.pycqa.org/en/latest/user_guide/messages/{category}/{symbol}.html" \
+              #   ${PY_CHANGED_FILES} || EXITCODE=$?
+
+          fi;
 
           echo "Exit code was $EXITCODE";
 
