@@ -1583,7 +1583,12 @@ jobs:
 
 
   pull-request-report-comment:
-    if: ${{ github.ref_type != 'tag' && github.event_name != 'schedule' }}
+    if: >-
+      github.ref_type != 'tag'
+        &&
+      github.event_name != 'schedule'
+        &&
+      github.event_name != 'pull_request'
     needs:
       - init
       - vulnerability-scan
