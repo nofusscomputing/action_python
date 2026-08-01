@@ -1603,16 +1603,32 @@ jobs:
         # with:
         #   sha: ${{ github.event.pull_request.head.sha }}
 
+      - name: Create PR VAR
+        shell: bash
+        run:
+          if [ "0${{ steps.finder.outputs.pr }}" != "0" ]; then
+
+            echo "FOUND_PR_NUM=${{ steps.finder.outputs.pr }}" >> $GITHUB_ENV;
+
+          fi;
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+
+            echo "FOUND_PR_NUM=${{ github.event.pull_request.number }}" >> $GITHUB_ENV;
+
+          fi
+
+
 
       - name: Fetch Vulnerability Report
-        if: ${{ steps.finder.outputs.pr != '' }}
+        if: ${{ env.FOUND_PR_NUM != '' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
         with:
           name: python-vulnerability-report-${{ matrix.requirements }}
 
 
       - name: Capture scan results
-        if: ${{ steps.finder.outputs.pr != '' }}
+        if: ${{ env.FOUND_PR_NUM != '' }}
         run: |
           content=$(cat vulnerability-report.md | head -c 65000)
           echo "report<<EOF" >> $GITHUB_ENV
@@ -1621,10 +1637,10 @@ jobs:
 
 
       - name: Comment scan results on PR
-        if: ${{ steps.finder.outputs.pr != '' }}
+        if: ${{ env.FOUND_PR_NUM != '' }}
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88    # v3.0.5
         with:
-          number: ${{ steps.finder.outputs.pr }}
+          number: ${{ env.FOUND_PR_NUM }}
           header: Python ${{ matrix.requirements }} Scan Results
           message: |
             ${{ env.report }}
