@@ -786,6 +786,10 @@ jobs:
       - unit-test
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     strategy:
       max-parallel: 4
       matrix:
@@ -865,6 +869,10 @@ jobs:
       - functional-test
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     strategy:
       max-parallel: 4
       matrix:
