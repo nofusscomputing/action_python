@@ -784,7 +784,10 @@ jobs:
     needs:
       - init
       - unit-test
-    if: github.event_name != 'schedule'
+    if: >-
+      github.event_name != 'schedule'
+        &&
+      github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -867,7 +870,10 @@ jobs:
     needs:
       - init
       - functional-test
-    if: github.event_name != 'schedule'
+    if: >-
+      github.event_name != 'schedule'
+        &&
+      github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -998,7 +1004,12 @@ jobs:
       - name: create status check/comment for code coverage results
         id: jest_coverage_check
         uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
-        if: success() || failure()
+        if: >-
+          (
+            success() || failure()
+          )
+            &&
+          github.event_name != 'pull_request'
         with:
           github-token: ${{ github.token }}
           summary-file: code-coverage-results.md
@@ -1069,7 +1080,12 @@ jobs:
       - name: create status check/comment for code coverage results
         id: jest_coverage_check
         uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
-        if: success() || failure()
+        if: >-
+          (
+            success() || failure()
+          )
+            &&
+          github.event_name != 'pull_request'
         with:
           github-token: ${{ github.token }}
           summary-file: code-coverage-results.md
