@@ -1,0 +1,241 @@
+name: 'Python - Post'
+
+on:
+  workflow_call:
+#
+# When you import this workflow use this trigger
+# as the example
+#
+# on:
+#   workflow_run:
+#     workflows:
+#       - CI
+#     branches-ignore:
+#       - master
+#       - development
+#       - feat-*
+#     types:
+#       - completed
+
+
+permissions:
+  contents: read    # python-report-test
+  actions: read     # python-report-test
+  checks: write     # python-report-test
+
+
+jobs:
+
+
+  trace:
+    name: Trace
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+        &&
+      github.event.workflow_run.event == 'pull_request'
+        &&
+      github.event.workflow_run.head_repository.full_name != github.event.workflow_run.repository.full_name
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - name: Trace
+        shell: bash
+        run:
+          echo "***************** export env vars ****************";
+          export;
+          echo "***************** Do PR vars show? ****************";
+          echo "${{ github.pull_request }}";
+          echo "***************** ****************";
+          
+          echo "***************** ****************";
+
+
+      - name: "[Trace] Dump event payload"
+        shell: bash
+        run: |
+          jq . "$GITHUB_EVENT_PATH"
+
+
+      - name: "[Trace] Dump environment"
+        shell: bash
+        run: |
+          env | sort
+
+
+      - name: "[Trace] Dump GitHub contexts"
+        shell: bash
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+          INPUTS_CONTEXT: ${{ toJSON(inputs) }}
+          VARS_CONTEXT: ${{ toJSON(vars) }}
+          ENV_CONTEXT: ${{ toJSON(env) }}
+          JOB_CONTEXT: ${{ toJSON(job) }}
+          STEPS_CONTEXT: ${{ toJSON(steps) }}
+          RUNNER_CONTEXT: ${{ toJSON(runner) }}
+          STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
+          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
+          NEEDS_CONTEXT: ${{ toJSON(needs) }}
+        run: |
+          echo "===== github ====="
+          echo "$GITHUB_CONTEXT"
+
+          echo "===== inputs ====="
+          echo "$INPUTS_CONTEXT"
+
+          echo "===== vars ====="
+          echo "$VARS_CONTEXT"
+
+          echo "===== env ====="
+          echo "$ENV_CONTEXT"
+
+          echo "===== job ====="
+          echo "$JOB_CONTEXT"
+
+          echo "===== steps ====="
+          echo "$STEPS_CONTEXT"
+
+          echo "===== runner ====="
+          echo "$RUNNER_CONTEXT"
+
+
+
+  python-report-test-unit:
+    name: Unit Test Report
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+        &&
+      github.event.workflow_run.event == 'pull_request'
+        &&
+      github.event.workflow_run.head_repository.full_name != github.event.workflow_run.repository.full_name
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+
+
+      - name: Download Unit Test Report
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        with:
+          name: unit-test-results-3.11
+          repository: nofusscomputing/centurion_erp
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+
+      - name: Unit Test Report
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        id: test-report-unit
+        with:
+          # artifact: unit-test-results-${{ matrix.python-version }}
+          name: Unit Test Report [Python 3.11]
+          path: '*.xml'
+          reporter: java-junit
+          use-actions-summary: false
+
+
+
+  python-report-test-functional:
+    name: Function Test Report
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+        &&
+      github.event.workflow_run.event == 'pull_request'
+        &&
+      github.event.workflow_run.head_repository.full_name != github.event.workflow_run.repository.full_name
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+
+
+      - name: Download Functional Test Report
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        with:
+          name: functional-test-results-3.11
+          repository: nofusscomputing/centurion_erp
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+
+      - name: Functional Test Report
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        id: test-report-functional
+        with:
+          # artifact: functional-test-results-${{ matrix.python-version }}
+          name: Functional Test Report [Python 3.11]
+          path: '*.xml'
+          reporter: java-junit
+          # fail-on-error: false
+          use-actions-summary: false
+
+
+
+  python-report-coverage-unit:
+    name: Unit Test Coverage Report
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+        &&
+      github.event.workflow_run.event == 'pull_request'
+        &&
+      github.event.workflow_run.head_repository.full_name != github.event.workflow_run.repository.full_name
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        with:
+          name: code-coverage-results-3.11
+          path: code-coverage-results.md
+          repository: nofusscomputing/centurion_erp
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+
+      - name: create status check/comment for code coverage results
+        id: jest_coverage_check
+        uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
+        with:
+          github-token: ${{ github.token }}
+          summary-file: code-coverage-results.md
+          create-pr-comment: true
+          update-comment-if-one-exists: true
+          update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
+
+
+
+  python-report-coverage-functional:
+    name: Functional Test Coverage Report
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+        &&
+      github.event.workflow_run.event == 'pull_request'
+        &&
+      github.event.workflow_run.head_repository.full_name != github.event.workflow_run.repository.full_name
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        with:
+          name: functional-code-coverage-results-3.11
+          path: code-coverage-results.md
+          repository: nofusscomputing/centurion_erp
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+
+      - name: create status check/comment for code coverage results
+        id: jest_coverage_check
+        uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
+        with:
+          github-token: ${{ github.token }}
+          summary-file: code-coverage-results.md
+          check-name: 'Functional Code Coverage'
+          create-pr-comment: true
+          update-comment-if-one-exists: true
+          update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
