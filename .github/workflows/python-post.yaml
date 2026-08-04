@@ -194,6 +194,13 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
+      - name: Debug coverage summary
+        run: |
+          pwd
+          ls -la
+          file code-coverage-results.md || true
+          stat code-coverage-results.md || true
+
 
       - name: create status check/comment for code coverage results
         id: jest_coverage_check
