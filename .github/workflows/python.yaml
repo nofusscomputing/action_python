@@ -1581,7 +1581,7 @@ jobs:
 
 
       - name: Print Report
-        run: echo ${{ steps.sarif-to-markdown.outputs.markdown }}
+        run: echo '${{ steps.sarif-to-markdown.outputs.markdown }}';
 
 
       - name: Create Report Artifact
