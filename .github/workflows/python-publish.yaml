@@ -16,9 +16,9 @@ on:
         required: false
         type: string
 
-    secrets:
-      password:
-        required: true
+    # secrets:
+    #   password:
+    #     required: true
 
 jobs:
 
