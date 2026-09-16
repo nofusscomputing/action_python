@@ -42,7 +42,41 @@ jobs:
           path: dist
 
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      # - name: Publish package distributions to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     skip-existing: true
+      #     repository-url: https://${{ inputs.PYTHON_PROJECT_URL}}/project/${{ inputs.PYTHON_PROJECT_NAME}}/
+      #     user: ${{ secrets.NFC_PYPI_USERNAME }}
+      #     password: ${{ secrets.NFC_PYPI_TOKEN }}
+
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97    # v7.0.0
         with:
-          skip-existing: true
+          python-version: '3.13'
+
+
+      - name: Install Twine
+        run: |
+          pip install twine
+
+
+      - name: Trace
+        run: |
+          ls -l;
+          echo '****************************************************';
+          ls -l dist/;
+
+
+      - name: Publish package distributions to PyPI
+        # env:
+        #   TWINE_USERNAME: __token__
+        #   TWINE_PASSWORD: ${{ secrets.NFC_PYPI_TOKEN }}
+        #   TWINE_REPOSITORY: https://${{ inputs.PYTHON_PROJECT_URL}}/project/${{ inputs.PYTHON_PROJECT_NAME}}/
+        run: |
+          twine upload \
+            --verbose \
+            --username __token__ \
+            --password ${{ secrets.NFC_PYPI_TOKEN }} \
+            dist/*
