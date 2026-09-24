@@ -733,18 +733,36 @@ jobs:
           coverage combine;
 
 
-      - name: Create Combined Report
+      - name: Trace 'ls -la'
+        shell: bash
+        run: |
+          ls -la;
+
+
+      - name: Create Combined Report - HTML
         shell: bash
         run: |
           mkdir -p artifacts;
           coverage html -d artifacts;
-          mv .coverage artifacts/coverage/combined/;
 
 
       - name: Create Combined Report - XML
         shell: bash
         run: |
           coverage xml -o artifacts/combined-coverage.xml;
+
+
+      - name: Create Combined Report - json
+        shell: bash
+        run: |
+          coverage json -o artifacts/combined-coverage.json;
+
+
+      - name: keep combine artifact
+        shell: bash
+        run: |
+          mkdir -p artifacts/coverage/combined;
+          mv .coverage artifacts/coverage/combined/ || true;
 
 
       - name: Code Coverage Report
@@ -759,12 +777,6 @@ jobs:
           indicators: true
           output: both
           thresholds: '60 85'
-
-
-      - name: Create Combined Report - json
-        shell: bash
-        run: |
-          coverage json -o artifacts/combined-coverage.json;
 
 
       - name: Obtain coverage data
