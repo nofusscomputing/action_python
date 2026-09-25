@@ -742,8 +742,8 @@ jobs:
       - name: Create Combined Report - HTML
         shell: bash
         run: |
-          mkdir -p artifacts;
-          coverage html -d artifacts;
+          mkdir -p artifacts/combined-coverage-report-html;
+          coverage html -d artifacts/html;
 
 
       - name: Create Combined Report - XML
@@ -777,6 +777,31 @@ jobs:
           indicators: true
           output: both
           thresholds: '60 85'
+
+
+      - name: keep combine artifact
+        shell: bash
+        run: |
+          mkdir -p artifacts/coverage/combined;
+          mv code-coverage-results.md artifacts/coverage/code-coverage-combined-results.md;
+
+
+      - name: create status check/comment for code coverage results
+        id: jest_coverage_check
+        uses: im-open/process-code-coverage-summary@e2984f897702d68619d358a834d80a74aa0d9840    # v2.3.1
+        if: >-
+          (
+            success() || failure()
+          )
+            &&
+          github.event_name != 'pull_request'
+        with:
+          github-token: ${{ github.token }}
+          summary-file: artifacts/coverage/code-coverage-combined-results.md
+          check-name: 'Combined Code Coverage'
+          create-pr-comment: true
+          update-comment-if-one-exists: true
+          update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
 
 
       - name: Obtain coverage data
@@ -1082,6 +1107,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           summary-file: code-coverage-results.md
+          check-name: 'Unit Code Coverage'
           create-pr-comment: true
           update-comment-if-one-exists: true
           update-comment-key: "${{ env.GITHUB-JOB }}_${{ env.GITHUB-ACTION }}"
