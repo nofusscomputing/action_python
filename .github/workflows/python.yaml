@@ -41,7 +41,7 @@ on:
 
 
 env:
-  TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
+  TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2    # see https://github.com/nofusscomputing/action_python/issues/10
 
 
 jobs:
@@ -513,6 +513,21 @@ jobs:
           path: coverage.xml
 
 
+      - name: Upload Code Coverage
+        if: >-
+          (
+            github.event_name != 'pull_request'
+            || github.event.pull_request.head.repo.full_name == github.repository
+          )
+            &&
+          matrix.python-version == inputs.PYTHON_VERSION
+        uses: actions/upload-code-coverage@bfa741d815a28cb064a8e3a0837e577457a017d5    # v1.4.3
+        with:
+          file: coverage.xml
+          language: Python
+          label: Unit-${{ matrix.python-version }}
+
+
       - name: Upload Coverage Report (json)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
         if: success() || failure()
@@ -617,6 +632,21 @@ jobs:
         with:
           name: functional-coverage-report-${{ matrix.python-version }}
           path: functional-coverage.xml
+
+
+      - name: Upload Code Coverage
+        if: >-
+          (
+            github.event_name != 'pull_request'
+            || github.event.pull_request.head.repo.full_name == github.repository
+          )
+            &&
+          matrix.python-version == inputs.PYTHON_VERSION
+        uses: actions/upload-code-coverage@bfa741d815a28cb064a8e3a0837e577457a017d5    # v1.4.3
+        with:
+          file: functional-coverage.xml
+          language: Python
+          label: Unit-${{ matrix.python-version }}
 
 
       - name: Upload Coverage Report (json)
