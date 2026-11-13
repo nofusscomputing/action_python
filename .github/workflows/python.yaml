@@ -690,8 +690,10 @@ jobs:
     name: Create Combined Test Reports
     needs:
       - init
-      - unit-test
-      - functional-test
+      # - unit-test
+      - report
+      # - functional-test
+      - functional-report
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     strategy:
@@ -865,6 +867,64 @@ jobs:
           echo branch_coverage=$(echo "$(jq -r '.totals.covered_branches' artifacts/combined-coverage.json) $(jq -r '.totals.num_branches' artifacts/combined-coverage.json)" | awk '{covered=$1; total=$2; printf "%.4f%%", (covered/total*100)"%"}') >> $GITHUB_OUTPUT
 
 
+
+      - name: Download Unit Test Stats json
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1 # v7.0.1
+        if: success() || failure()
+        with:
+          name: unit-test-stats-${{ matrix.python-version }}
+
+
+
+      - name: Download Functional Test Stats json
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        if: success() || failure()
+        with:
+          name: functional-test-stats-${{ matrix.python-version }}
+
+
+      - name: Obtain coverage data
+        id: stats-combined
+        if: >-
+          matrix.python-version == inputs.PYTHON_VERSION
+        shell: bash
+        run: |
+          echo sudo apt update;
+          echo sudo apt install -y jq;
+          ls -la;
+          echo '*******';
+          cat test_stats_unit.json;
+          echo '*******';
+          cat test_stats_functional.json;
+          echo '*******';
+          echo $(jq -r '.passed // 0' test_stats_unit.json);
+          echo '*******';
+          echo $(jq -r '.passed // 0' test_stats_functional.json);
+          echo '*******';
+          echo "passed=$(($(jq -r '.passed // 0' test_stats_unit.json) + $(jq -r '.passed // 0' test_stats_functional.json)))" >> $GITHUB_OUTPUT
+          echo "skipped=$(($(jq -r '.skipped // 0' test_stats_unit.json) + $(jq -r '.skipped // 0' test_stats_functional.json)))" >> $GITHUB_OUTPUT
+          echo "failed=$(($(jq -r '.failed // 0' test_stats_unit.json) + $(jq -r '.failed // 0' test_stats_functional.json)))" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT;
+
+
+
+      - name: Create Shields.io Endpoint.json
+        if: success() || failure()
+        shell: bash
+        run: |
+          echo '
+          {
+            "schemaVersion": 1,
+            "label": "Combined Tests",
+            "message": "${{ steps.stats-combined.outputs.passed }} passed | ${{ steps.stats-combined.outputs.skipped }} skipped | ${{ steps.stats-combined.outputs.failed }} failed",
+            "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 162.53 196.9\"><defs><linearGradient id=\"a\" x1=\"319.46\" y1=\"219.79\" x2=\"478.86\" y2=\"82.65\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#5a9fd4\"/><stop offset=\"1\" stop-color=\"#306998\"/></linearGradient><linearGradient id=\"b\" x1=\"540.48\" y1=\"-0.35\" x2=\"483.56\" y2=\"80.18\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#ffd43b\"/><stop offset=\"1\" stop-color=\"#ffe873\"/></linearGradient><radialGradient id=\"c\" cx=\"-809.2\" cy=\"196.83\" r=\"42.46\" gradientTransform=\"matrix(0, -0.24, -1.05, 0, 463.94, 150.1)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#b8b8b8\" stop-opacity=\"0.5\"/><stop offset=\"1\" stop-color=\"#7f7f7f\" stop-opacity=\"0\"/></radialGradient></defs><title>python-logo</title><path d=\"M255,157.55a111.94,111.94,0,0,0-18.73,1.6c-16.59,2.93-19.6,9.07-19.6,20.38v14.94h39.2v5H202c-11.39,0-21.37,6.85-24.49,19.88-3.6,14.93-3.76,24.25,0,39.84,2.79,11.61,9.44,19.88,20.84,19.88h13.48V261.13c0-12.94,11.2-24.35,24.49-24.35h39.16a19.75,19.75,0,0,0,19.6-19.92V179.53c0-10.62-9-18.61-19.6-20.38A122.28,122.28,0,0,0,255,157.55Zm-21.2,12a7.47,7.47,0,1,1-7.36,7.49A7.44,7.44,0,0,1,233.83,169.57Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#a)\"/><path d=\"M299.95,199.45v17.41c0,13.5-11.44,24.86-24.49,24.86H236.3c-10.73,0-19.6,9.18-19.6,19.92V299c0,10.62,9.24,16.87,19.6,19.92,12.41,3.65,24.31,4.31,39.16,0,9.87-2.86,19.6-8.61,19.6-19.92V284H255.9v-5h58.76c11.39,0,15.64-7.95,19.6-19.88,4.09-12.28,3.92-24.09,0-39.84-2.82-11.34-8.19-19.88-19.6-19.88Zm-22,94.54a7.47,7.47,0,1,1-7.36,7.45A7.4,7.4,0,0,1,277.92,294Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#b)\"/><path d=\"M308.88,344.26c0,5.63-23.52,10.19-52.54,10.19s-52.54-4.56-52.54-10.19,23.52-10.19,52.54-10.19S308.88,338.64,308.88,344.26Z\" transform=\"translate(-174.73 -157.55)\" style=\"opacity:0.44382017850875854;isolation:isolate;fill:url(#c)\"/></svg>",
+            "color": "#4584b6",
+            "style": "plastic"
+          }' > artifacts/endpoint_combined_stats.json
+
+
+
+
       - name: Create Shields.io Endpoint.json for coverage
         if: >-
           (
@@ -883,7 +943,7 @@ jobs:
           echo '
           {
             "schemaVersion": 1,
-            "label": "Code Coverage",
+            "label": "Combined Code Coverage",
             "message": "${{ steps.coverage-combined.outputs.coverage }} Line | ${{ steps.coverage-combined.outputs.branch_coverage }} Branch",
             "logoSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 162.53 196.9\"><defs><linearGradient id=\"a\" x1=\"319.46\" y1=\"219.79\" x2=\"478.86\" y2=\"82.65\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#5a9fd4\"/><stop offset=\"1\" stop-color=\"#306998\"/></linearGradient><linearGradient id=\"b\" x1=\"540.48\" y1=\"-0.35\" x2=\"483.56\" y2=\"80.18\" gradientTransform=\"matrix(0.56, 0, 0, -0.57, -8.96, 287.06)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#ffd43b\"/><stop offset=\"1\" stop-color=\"#ffe873\"/></linearGradient><radialGradient id=\"c\" cx=\"-809.2\" cy=\"196.83\" r=\"42.46\" gradientTransform=\"matrix(0, -0.24, -1.05, 0, 463.94, 150.1)\" gradientUnits=\"userSpaceOnUse\"><stop offset=\"0\" stop-color=\"#b8b8b8\" stop-opacity=\"0.5\"/><stop offset=\"1\" stop-color=\"#7f7f7f\" stop-opacity=\"0\"/></radialGradient></defs><title>python-logo</title><path d=\"M255,157.55a111.94,111.94,0,0,0-18.73,1.6c-16.59,2.93-19.6,9.07-19.6,20.38v14.94h39.2v5H202c-11.39,0-21.37,6.85-24.49,19.88-3.6,14.93-3.76,24.25,0,39.84,2.79,11.61,9.44,19.88,20.84,19.88h13.48V261.13c0-12.94,11.2-24.35,24.49-24.35h39.16a19.75,19.75,0,0,0,19.6-19.92V179.53c0-10.62-9-18.61-19.6-20.38A122.28,122.28,0,0,0,255,157.55Zm-21.2,12a7.47,7.47,0,1,1-7.36,7.49A7.44,7.44,0,0,1,233.83,169.57Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#a)\"/><path d=\"M299.95,199.45v17.41c0,13.5-11.44,24.86-24.49,24.86H236.3c-10.73,0-19.6,9.18-19.6,19.92V299c0,10.62,9.24,16.87,19.6,19.92,12.41,3.65,24.31,4.31,39.16,0,9.87-2.86,19.6-8.61,19.6-19.92V284H255.9v-5h58.76c11.39,0,15.64-7.95,19.6-19.88,4.09-12.28,3.92-24.09,0-39.84-2.82-11.34-8.19-19.88-19.6-19.88Zm-22,94.54a7.47,7.47,0,1,1-7.36,7.45A7.4,7.4,0,0,1,277.92,294Z\" transform=\"translate(-174.73 -157.55)\" style=\"fill:url(#b)\"/><path d=\"M308.88,344.26c0,5.63-23.52,10.19-52.54,10.19s-52.54-4.56-52.54-10.19,23.52-10.19,52.54-10.19S308.88,338.64,308.88,344.26Z\" transform=\"translate(-174.73 -157.55)\" style=\"opacity:0.44382017850875854;isolation:isolate;fill:url(#c)\"/></svg>",
             "color": "#4584b6",
@@ -993,6 +1053,27 @@ jobs:
           ls -la;
 
 
+      - name: Create Test Stats
+        if: success() || failure()
+        shell: bash
+        run: |
+          echo '
+          {
+            "passed": ${{ steps.test-report.outputs.passed }},
+            "skipped": ${{ steps.test-report.outputs.skipped }},
+            "failed": ${{ steps.test-report.outputs.failed }}
+          }
+          ' > test_stats_unit.json;
+
+
+      - name: Upload Test Stats json
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
+        if: success() || failure()
+        with:
+          name: unit-test-stats-${{ matrix.python-version }}
+          path: test_stats_unit.json
+
+
       - name: Create Shields.io Endpoint.json
         if: success() || failure()
         shell: bash
@@ -1077,6 +1158,27 @@ jobs:
         shell: bash
         run: |
           ls -la;
+
+
+      - name: Create Test Stats
+        if: success() || failure()
+        shell: bash
+        run: |
+          echo '
+          {
+            "passed": ${{ steps.test-report.outputs.passed }},
+            "skipped": ${{ steps.test-report.outputs.skipped }},
+            "failed": ${{ steps.test-report.outputs.failed }}
+          }
+          ' > test_stats_functional.json;
+
+
+      - name: Upload Test Stats json
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
+        if: success() || failure()
+        with:
+          name: functional-test-stats-${{ matrix.python-version }}
+          path: test_stats_functional.json
 
 
       - name: Create Shields.io Endpoint.json
@@ -1259,7 +1361,7 @@ jobs:
   badge-endpoint:
     name: Publish Badge endpoint files
     if: >-
-      (github.ref_name == 'master' || github.ref_name == 'development')
+      (github.ref_name == 'master' || github.ref_name == 'development' || github.ref_name == 'feat-next-release')
         &&
       github.event_name != 'schedule'
         &&
@@ -1444,7 +1546,7 @@ jobs:
   badge-endpoint-functional:
     name: Publish Badge endpoint files (Functional)
     if: >-
-      (github.ref_name == 'master' || github.ref_name == 'development')
+      (github.ref_name == 'master' || github.ref_name == 'development' || github.ref_name == 'feat-next-release')
         &&
       github.event_name != 'schedule'
         &&
@@ -1553,6 +1655,145 @@ jobs:
           cat repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_coverage_functional.json;
 
 
+
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global user.email "helpdesk@nofusscomputing.com";
+          git config --global user.name "nfc-bot";
+
+
+      - name: Git add
+        id: git-add
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git status;
+          echo "[Debug] ****************************";
+
+          if [ "$(git status -s)" ]; then
+
+            echo "changed=true" > $GITHUB_OUTPUT;
+
+            echo "[Info] Changes need to be committed";
+
+          else
+
+            echo "changed=false" > $GITHUB_OUTPUT;
+
+            echo "[Info] NO changes to be committed";
+
+          fi
+
+          echo "[Debug] ****************************";
+
+          git add .
+
+
+      - name: Git commit
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git commit -m "chore: add badge endpount file ${{ github.repository }}/${{ github.ref_name }}"
+
+
+      - name: git push
+        if: ${{ steps.git-add.outputs.changed == 'true' }}
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          cd endpoint_publish;
+          echo "[Debug] ****************************";
+          ls -la
+          echo "[Debug] ****************************";
+          echo "[Debug] PWD[${PWD}]";
+          echo "[Debug] ****************************";
+          git push
+
+
+
+  badge-endpoint-combined:
+    name: Publish Badge endpoint files (Combined)
+    if: >-
+      (github.ref_name == 'master' || github.ref_name == 'development' || github.ref_name == 'feat-next-release')
+        &&
+      github.event_name != 'schedule'
+        &&
+      github.repository == 'nofusscomputing/centurion_erp'
+    needs:
+      - combines_report
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [ "${{ inputs.PYTHON_VERSION }}" ]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout Endpoint Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+        with:
+          repository: 'nofusscomputing/.github'
+          ref: 'master'
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          path: 'endpoint_publish'
+          fetch-depth: '1'
+          show-progress: true
+          submodules: false
+
+
+      - name: Create Publish Directories
+        shell: bash
+        run: |
+          echo "[Debug] PWD[${PWD}]";
+          cd endpoint_publish;
+          echo "[Debug] PWD[${PWD}]";
+          mkdir -p repositories/${{ github.repository }}/${{ github.ref_name }};
+          ls -la;
+
+
+      # - name: Create Publish Directories
+      #   shell: bash
+      #   run: |
+      #     echo "[Debug] PWD[${PWD}]";
+      #     # cd repositories/${{ github.repository }}/${{ github.ref_name }};
+      #     echo "[Debug] PWD[${PWD}]";
+
+
+      - name: Download Badge Endpoint json
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # V8.0.1
+        with:
+          name: coverage-combined-unit-function-html-${{ matrix.python-version }}
+
+
+      - name: Add endpoint file
+        shell: bash
+        run: |
+          cd endpoint_publish;
+          ls -la;
+          cp ../badge_endpoint_coverage_combined.json repositories/${{ github.repository }}/${{ github.ref_name }}/badge_endpoint_coverage_combined.json;
+          cp ../endpoint_combined_stats.json  repositories/${{ github.repository }}/${{ github.ref_name }}/endpoint_combined_stats.json
+          echo "[Debug] **************************** - ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/";
+
+          ls -la repositories/${{ github.repository }}/${{ github.ref_name }}/;
+
+
+          
 
       - name: Configure git
         shell: bash
