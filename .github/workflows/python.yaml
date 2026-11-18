@@ -223,6 +223,29 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
 
+      - name: Debug Python build environment
+        run: |
+          python --version || true;
+          echo '*******************************************';
+          python -c "import sys; print(sys.executable)" || true;
+          echo '*******************************************';
+          python -c "import sysconfig; print(sysconfig.get_config_var('CC'))" || true;
+          echo '*******************************************';
+          gcc --version || true;
+          echo '*******************************************';
+          sha256sum /opt/hostedtoolcache/Python/3.13.18/x64/include/python3.13/Python.h || true;
+          echo '*******************************************';
+          grep -R '_PyInterpreterState_Get' /opt/hostedtoolcache/Python/3.13.18/x64/include/python3.13/ || true;
+          echo '*******************************************';
+          pg_config --version || true;
+          echo '*******************************************';
+          pg_config --includedir || true;
+          echo '*******************************************';
+          pip cache list | grep psycopg || true;
+          echo '*******************************************';
+
+
+
       - name: Install Dependencies ${{ matrix.python-version }}
         if: ${{ github.ref_name != 'master' && github.ref_name != 'development' && github.ref_type != 'tag' }}
         run: |
