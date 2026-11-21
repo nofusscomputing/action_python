@@ -1065,7 +1065,8 @@ jobs:
 
       - name: Test Report
         if: success() || failure()
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        # uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        uses: dorny/test-reporter@79b4b4400dc2354b89e9dd811ef9caa9bdd4f665    # main fix http errors see: https://github.com/dorny/test-reporter/pull/867
         id: test-report
         with:
           # artifact: unit-test-results-${{ matrix.python-version }}
@@ -1171,7 +1172,8 @@ jobs:
 
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        # uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2    # v3.0.0
+        uses: dorny/test-reporter@79b4b4400dc2354b89e9dd811ef9caa9bdd4f665    # main fix http errors see: https://github.com/dorny/test-reporter/pull/867
         id: test-report
         with:
           # artifact: functional-test-results-${{ matrix.python-version }}
